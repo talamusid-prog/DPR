@@ -118,10 +118,10 @@ const Gallery = () => {
         <div className="text-center mb-6 sm:mb-8 lg:mb-12">
           <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium mb-3 sm:mb-4">
             <Filter className="w-4 h-4" />
-            Masonry Gallery
+            Gallery
           </div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-secondary mb-3 sm:mb-4 leading-tight">
-            Masonry Gallery
+            Gallery
           </h2>
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-0">
             Jelajahi keindahan Nusa Tenggara Barat dalam galeri foto masonry
