@@ -13,6 +13,7 @@ import BlogDetail from "./components/BlogDetail";
 import CreateArticle from "./pages/CreateArticle";
 import EditArticle from "./pages/EditArticle";
 import AdminPortfolio from "./pages/AdminPortfolio";
+import AdminGallery from "./pages/AdminGallery";
 import Portfolio from "./pages/Portfolio";
 import PortfolioDetail from "./components/PortfolioDetail";
 import NotFound from "./pages/NotFound";
@@ -31,6 +32,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/admin-portfolio" element={<AdminPortfolio />} />
+              <Route path="/admin-gallery" element={<AdminGallery />} />
               <Route path="/create-article" element={<CreateArticle />} />
               <Route path="/edit-article/:slug" element={<EditArticle />} />
               <Route path="/blog" element={<Blog />} />

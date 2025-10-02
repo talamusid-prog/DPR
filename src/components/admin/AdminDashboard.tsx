@@ -18,7 +18,7 @@ import {
   EyeOff,
   BarChart3,
   Settings,
-  Briefcase
+  Camera
 } from "lucide-react";
 import { getAllPosts, deletePost } from "@/lib/blogService";
 import { BlogPost } from "@/lib/supabase";
@@ -160,11 +160,11 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
               </button>
               
               <button
-                onClick={() => navigate('/admin-portfolio')}
+                onClick={() => navigate('/admin-gallery')}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-50"
               >
-                <Briefcase className="h-5 w-5" />
-                Portofolio
+                <Camera className="h-5 w-5" />
+                Galeri Komunitas
               </button>
               
               <button

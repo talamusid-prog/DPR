@@ -45,8 +45,8 @@ const Hero = () => {
       <div className="absolute -bottom-20 lg:bottom-0 left-0 lg:left-[60vw] lg:transform lg:-translate-x-1/6 z-10">
         <img
           src="/jasa1.png"
-          alt="Jasa Website Development"
-          className="w-full h-auto lg:w-auto lg:max-h-[65vh] lg:object-contain"
+          alt="Pemuda NTB Pasangkayu"
+          className="w-full h-auto lg:w-auto lg:max-h-[95vh] xl:max-h-[100vh] lg:object-contain"
         />
       </div>
 

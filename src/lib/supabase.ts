@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = 'https://kmoojxygtcbfvomwczhs.supabase.co'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imttb29qeHlndGNiZnZvbXdjemhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUxNTQyOTEsImV4cCI6MjA3MDczMDI5MX0.l1nY9QCVWuwpa8ETgA95Nba5jwgUNvcQA9ngX2xzzFc'
+const supabaseUrl = 'https://paobhbmitoydoxnifijk.supabase.co'
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhb2JoYm1pdG95ZG94bmlmaWprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MTQ5MjEsImV4cCI6MjA3NDk5MDkyMX0.vyfqLYjaFTvTB4M2A3FGLihV2bN28kroqID3K5ROTFM'
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
@@ -63,6 +63,33 @@ export interface CreatePortfolio {
   technologies: string[]
   project_url?: string
   github_url?: string
+  status: 'draft' | 'published'
+  featured: boolean
+}
+
+// Types untuk Gallery
+export interface GalleryImage {
+  id: string
+  title: string
+  description: string
+  slug: string
+  image_url: string
+  location: string
+  category: string
+  photographer: string
+  created_at: string
+  updated_at: string
+  status: 'draft' | 'published'
+  featured: boolean
+}
+
+export interface CreateGalleryImage {
+  title: string
+  description: string
+  image_url: string
+  location: string
+  category: string
+  photographer: string
   status: 'draft' | 'published'
   featured: boolean
 }
