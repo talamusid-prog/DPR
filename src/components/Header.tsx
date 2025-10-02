@@ -85,7 +85,7 @@ const Header = ({ onLogoClick }: HeaderProps) => {
               className="gradient-primary text-white hover:shadow-glow transition-smooth"
               onClick={handleWhatsAppClick}
             >
-              Konsultasi Gratis
+              Gabung Sekarang
             </Button>
           </div>
 

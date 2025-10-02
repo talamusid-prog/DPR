@@ -14,7 +14,10 @@ const Hero = () => {
                 </span>
                 <br />
                 <span className="gradient-primary bg-clip-text text-transparent">
-                  Membangun Masa Depan
+                  Membangun{" "}
+                </span>
+                <span className="bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
+                  Masa Depan
                 </span>
               </h1>
               <p className="text-lg text-muted-foreground leading-relaxed">
