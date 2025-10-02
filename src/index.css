@@ -18,9 +18,9 @@ All colors MUST be HSL.
     --popover-foreground: 0 0% 16%;
 
     /* Brand Colors */
-    --primary: 16 75% 55%; /* #EC652A */
+    --primary: 238 100% 68%; /* #5b61ff */
     --primary-foreground: 0 0% 98%;
-    --primary-dark: 16 85% 45%;
+    --primary-dark: 238 45% 39%; /* #353893 */
 
     --secondary: 0 0% 16%; /* #282828 */
     --secondary-foreground: 0 0% 98%;
@@ -44,7 +44,7 @@ All colors MUST be HSL.
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 16 75% 55%;
+    --ring: 238 100% 68%;
 
     --radius: 0.75rem;
 

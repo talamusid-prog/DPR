@@ -14,7 +14,7 @@ function getCurrentDate() {
 
 // Fungsi untuk generate sitemap XML
 function generateSitemap() {
-  const baseUrl = 'https://www.ideadigitalcreative.com';
+  const baseUrl = 'https://www.Komunitas Lombok Pasangkayu.com';
   const currentDate = getCurrentDate();
   
   // Static pages

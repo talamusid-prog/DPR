@@ -161,8 +161,8 @@ const Portfolio = () => {
         <meta name="twitter:title" content="Portofolio Proyek | Idea Digital Creative" />
         <meta name="twitter:description" content="Kumpulan proyek-proyek terbaik yang telah kami kerjakan untuk berbagai klien. Lihat portofolio website, e-commerce, dan aplikasi web kami." />
         <meta name="twitter:image" content="https://ideadigiralcreative.com/public/logo.png" />
-        <meta name="twitter:site" content="@ideadigitalcreative" />
-        <meta name="twitter:creator" content="@ideadigitalcreative" />
+        <meta name="twitter:site" content="@Komunitas Lombok Pasangkayu" />
+        <meta name="twitter:creator" content="@Komunitas Lombok Pasangkayu" />
         
         {/* Additional Meta Tags */}
         <meta name="robots" content="index, follow" />

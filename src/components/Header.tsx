@@ -43,11 +43,10 @@ const Header = ({ onLogoClick }: HeaderProps) => {
 
   const menuItems = [
     { label: "Home", href: "/", isAnchor: false },
-    { label: "Paket Harga", href: "#pricing", isAnchor: true },
-    { label: "Portofolio", href: "/portfolio", isAnchor: false },
-    { label: "Cara Kerja", href: "#process", isAnchor: true },
-    { label: "FAQ", href: "#faq", isAnchor: true },
-    { label: "Blog", href: "/blog", isAnchor: false },
+    { label: "Tentang Kami", href: "#pricing", isAnchor: true },
+    { label: "Galeri", href: "/portfolio", isAnchor: false },
+    { label: "Berita", href: "/blog", isAnchor: false },
+    { label: "Kontak", href: "/contact", isAnchor: false },
   ];
 
   return (

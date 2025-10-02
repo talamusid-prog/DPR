@@ -1,15 +1,12 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import Blog from "@/components/Blog";
-import Pricing from "@/components/Pricing";
-import Portfolio from "@/components/Portfolio";
+import Gallery from "@/components/Portfolio";
 import Process from "@/components/Process";
 import PricingHero from "@/components/PricingHero";
 import WhyWebsite from "@/components/WhyWebsite";
 import WebsiteTypes from "@/components/WebsiteTypes";
-import ConsultationCTA from "@/components/ConsultationCTA";
-import Testimonials from "@/components/Testimonials";
-import FAQ from "@/components/FAQ";
+import AnggotaKomunitas from "@/components/Testimonials";
 import Footer from "@/components/Footer";
 import FloatingChat from "@/components/FloatingChat";
 import BackToTop from "@/components/BackToTop";
@@ -24,12 +21,9 @@ const Index = () => {
         <PricingHero />
         <WhyWebsite />
         <WebsiteTypes />
-        <ConsultationCTA />
-        <Pricing />
-        <Portfolio />
+        <Gallery />
         <Blog />
-        <Testimonials />
-        <FAQ />
+        <AnggotaKomunitas />
       </main>
       <Footer />
       <FloatingChat />

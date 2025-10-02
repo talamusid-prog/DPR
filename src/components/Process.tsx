@@ -1,89 +1,82 @@
-import { ArrowRight } from "lucide-react";
+import { Target, Users, Heart, Building, Lightbulb, Leaf } from "lucide-react";
 
-const Process = () => {
-  const steps = [
+const VisiMisi = () => {
+  const misiItems = [
     {
-      number: "01",
-      iconSrc: "/icon-konsultasi-jasa-web.png.png",
-      title: "Konsultasi",
-      description: "Diskusikan kebutuhan websitemu dengan tim sales atau developer kami yang ahli, Sob!",
-      iconColor: "text-orange-500"
+      icon: <Leaf className="w-8 h-8" />,
+      title: "Melestarikan Budaya & Kearifan Lokal",
+      description: "Menghargai, merawat, dan mengembangkan nilai-nilai tradisi serta warisan daerah agar tetap relevan di era modern."
     },
     {
-      number: "02",
-      iconSrc: "/icon-payment-jasa-web.png.png",
-      title: "Melakukan Payment",
-      description: "selesaikan pembayaran pembuatan website terlebih dahulu agar dapat diproses",
-      iconColor: "text-orange-500"
+      icon: <Users className="w-8 h-8" />,
+      title: "Meningkatkan Kualitas Pemuda",
+      description: "Menyelenggarakan kegiatan pendidikan, pelatihan, dan pengembangan diri untuk memperkuat kapasitas pemuda dalam bidang akademik, sosial, teknologi, dan kewirausahaan."
     },
     {
-      number: "03",
-      iconSrc: "/icon-pengerjaan-jasa-web.png.png",
-      title: "Proses Pengerjaan",
-      description: "Websitemu sedang dalam proses pengerjaan dan finalisasi. Kamu bisa melakukan revisi 2x sekali",
-      iconColor: "text-orange-500"
+      icon: <Heart className="w-8 h-8" />,
+      title: "Membangun Solidaritas & Kebersamaan",
+      description: "Menciptakan ruang kolaborasi antar pemuda daerah untuk memperkuat persaudaraan, rasa memiliki, dan kerja sama yang positif."
     },
     {
-      number: "04",
-      iconSrc: "/icon-website-siap-jasa-web.png.png",
-      title: "Website Siap Digunakan",
-      description: "Selamat! Websitemu sudah jadi. Kami juga akan memberikan edukasi penggunaan website.",
-      iconColor: "text-orange-500"
+      icon: <Building className="w-8 h-8" />,
+      title: "Berperan Aktif dalam Pembangunan Daerah",
+      description: "Menjadi mitra strategis pemerintah dan masyarakat dalam program pembangunan sosial, ekonomi, dan lingkungan yang berkelanjutan."
+    },
+    {
+      icon: <Lightbulb className="w-8 h-8" />,
+      title: "Mendorong Inovasi & Kreativitas Pemuda",
+      description: "Memberikan ruang bagi ide-ide baru, teknologi, dan karya kreatif pemuda agar dapat memberikan manfaat nyata bagi daerah."
     }
   ];
 
   return (
-    <section id="process" className="py-16 bg-white">
+    <section id="visi-misi" className="py-16 bg-white">
       <div className="max-w-6xl mx-auto px-4">
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium mb-4">
-            <ArrowRight className="w-4 h-4" />
-            Cara Kerja
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium mb-6">
+            <Target className="w-4 h-4" />
+            Visi & Misi
           </div>
-          <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-            <span className="text-black">Langkah Mudah </span>
-            <span className="text-orange-500">Pembuatan Website</span>
-          </h2>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {steps.map((step, index) => (
-            <div 
-              key={index}
-              className="group"
-            >
-              {/* Icon and Number Container */}
-              <div className="flex items-center justify-between mb-4">
-                {/* Icon */}
-                <div className="w-16 h-16 flex items-center justify-center">
-                  <img 
-                    src={step.iconSrc} 
-                    alt={step.title}
-                    className="w-12 h-12 group-hover:scale-110 transition-transform duration-300" 
-                  />
-                </div>
-                
-                {/* Step Number */}
-                <div className="text-6xl font-bold text-gray-300">
-                  {step.number}
-                </div>
-              </div>
+        <div className="grid lg:grid-cols-2 gap-12 items-start">
+          {/* Visi Section */}
+          <div>
+            <h2 className="text-2xl lg:text-3xl font-bold mb-6">
+              <span className="gradient-primary bg-clip-text text-transparent">Visi Kami</span>
+            </h2>
+            <p className="text-lg text-gray-700 leading-relaxed">
+              Menjadi wadah pemuda daerah yang berkarakter, berdaya saing, dan berkontribusi aktif dalam menjaga warisan budaya serta membangun masa depan yang lebih baik bagi masyarakat dan bangsa.
+            </p>
+          </div>
 
-              {/* Content - Rata Kiri */}
-              <div className="space-y-3 text-left">
-                <h3 className="text-xl font-bold text-black">
-                  {step.title}
-                </h3>
-                <p className="text-black leading-relaxed text-sm">
-                  {step.description}
-                </p>
-              </div>
+          {/* Misi Section */}
+          <div>
+            <h3 className="text-2xl lg:text-3xl font-bold mb-6">
+              <span className="gradient-primary bg-clip-text text-transparent">Misi Kami</span>
+            </h3>
+            
+            <div className="space-y-1">
+              {misiItems.map((item, index) => (
+                <div 
+                  key={index}
+                  className="flex items-center gap-3 p-2 rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-primary/30 transition-all duration-300"
+                >
+                  <div className="gradient-primary text-white w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0">
+                    {item.icon}
+                  </div>
+                  
+                  <h4 className="text-base font-semibold text-gray-900">
+                    {item.title}
+                  </h4>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       </div>
     </section>
   );
 };
 
-export default Process;
+export default VisiMisi;
