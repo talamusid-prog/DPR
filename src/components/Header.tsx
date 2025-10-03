@@ -53,7 +53,13 @@ const Header = ({ onLogoClick }: HeaderProps) => {
           {/* Logo */}
           <div 
             className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={onLogoClick}
+            onClick={() => {
+              if (onLogoClick) {
+                onLogoClick();
+              } else {
+                navigate('/');
+              }
+            }}
           >
             <img 
               src="/logo.png" 
