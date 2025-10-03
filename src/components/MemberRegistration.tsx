@@ -1,25 +1,19 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { Users, Send } from 'lucide-react';
 
-interface FormData {
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-}
-
-const MemberRegistration: React.FC = () => {
-  const [formData, setFormData] = useState<FormData>({
+const MemberRegistration = () => {
+  const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
-    address: ''
+    address: '',
+    birthdate: '',
+    gender: '',
+    education: '',
+    occupation: '',
   });
-  
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [submitError, setSubmitError] = useState('');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -27,108 +21,163 @@ const MemberRegistration: React.FC = () => {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setSubmitError('');
-    
-    try {
-      // Here you would typically send the data to your backend
-      // For now, we'll just simulate a successful submission
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setSubmitSuccess(true);
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        address: ''
-      });
-    } catch (error) {
-      setSubmitError('Terjadi kesalahan saat mengirim data. Silakan coba lagi.');
-      console.error('Submission error:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Handle form submission logic here
+    console.log('Form submitted:', formData);
+    alert('Pendaftaran berhasil dikirim!');
+    // Reset form
+    setFormData({
+      name: '',
+      email: '',
+      phone: '',
+      address: '',
+      birthdate: '',
+      gender: '',
+      education: '',
+      occupation: '',
+    });
   };
 
-  if (submitSuccess) {
-    return (
-      <div className="bg-green-50 p-6 rounded-lg border border-green-200">
-        <h2 className="text-2xl font-semibold text-green-700 mb-3">Pendaftaran Berhasil!</h2>
-        <p className="text-green-600 mb-4">
-          Terima kasih telah mendaftar sebagai anggota. Kami akan menghubungi Anda segera.
-        </p>
-        <button
-          onClick={() => setSubmitSuccess(false)}
-          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
-        >
-          Daftar Lagi
-        </button>
-      </div>
-    );
-  }
-
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      {submitError && (
-        <div className="mb-4 p-3 bg-red-50 text-red-700 rounded border border-red-200">
-          {submitError}
+    <div className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-lg">
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium mb-4">
+          <Users className="w-4 h-4" />
+          Pendaftaran Anggota
         </div>
-      )}
-      
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label htmlFor="name" className="block text-gray-700 font-medium mb-2">
-            Nama Lengkap
-          </label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Masukkan nama lengkap Anda"
-          />
+        <h2 className="text-3xl font-bold text-secondary mb-4">
+          Formulir Pendaftaran Anggota IKKBG
+        </h2>
+        <p className="text-muted-foreground">
+          Silakan lengkapi formulir di bawah ini untuk mendaftar sebagai anggota komunitas
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+              Nama Lengkap <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+              placeholder="Masukkan nama lengkap"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              Email <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+              placeholder="contoh@email.com"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+              Nomor Telepon <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+              placeholder="08xxxxxxxxxx"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="birthdate" className="block text-sm font-medium text-gray-700">
+              Tanggal Lahir <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              id="birthdate"
+              name="birthdate"
+              value={formData.birthdate}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="gender" className="block text-sm font-medium text-gray-700">
+              Jenis Kelamin <span className="text-red-500">*</span>
+            </label>
+            <select
+              id="gender"
+              name="gender"
+              value={formData.gender}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+            >
+              <option value="">Pilih Jenis Kelamin</option>
+              <option value="Laki-laki">Laki-laki</option>
+              <option value="Perempuan">Perempuan</option>
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="education" className="block text-sm font-medium text-gray-700">
+              Pendidikan Terakhir
+            </label>
+            <select
+              id="education"
+              name="education"
+              value={formData.education}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+            >
+              <option value="">Pilih Pendidikan Terakhir</option>
+              <option value="SD">SD</option>
+              <option value="SMP">SMP</option>
+              <option value="SMA/SMK">SMA/SMK</option>
+              <option value="D3">D3</option>
+              <option value="S1">S1</option>
+              <option value="S2">S2</option>
+              <option value="S3">S3</option>
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="occupation" className="block text-sm font-medium text-gray-700">
+              Pekerjaan
+            </label>
+            <input
+              type="text"
+              id="occupation"
+              name="occupation"
+              value={formData.occupation}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+              placeholder="Masukkan pekerjaan"
+            />
+          </div>
         </div>
-        
-        <div className="mb-4">
-          <label htmlFor="email" className="block text-gray-700 font-medium mb-2">
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Masukkan alamat email Anda"
-          />
-        </div>
-        
-        <div className="mb-4">
-          <label htmlFor="phone" className="block text-gray-700 font-medium mb-2">
-            Nomor Telepon
-          </label>
-          <input
-            type="tel"
-            id="phone"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Masukkan nomor telepon Anda"
-          />
-        </div>
-        
-        <div className="mb-6">
-          <label htmlFor="address" className="block text-gray-700 font-medium mb-2">
-            Alamat
+
+        <div className="space-y-2">
+          <label htmlFor="address" className="block text-sm font-medium text-gray-700">
+            Alamat <span className="text-red-500">*</span>
           </label>
           <textarea
             id="address"
@@ -137,20 +186,20 @@ const MemberRegistration: React.FC = () => {
             onChange={handleChange}
             required
             rows={3}
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Masukkan alamat lengkap Anda"
-          />
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+            placeholder="Masukkan alamat lengkap"
+          ></textarea>
         </div>
-        
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className={`w-full py-3 px-4 rounded-md text-white font-medium ${
-            isSubmitting ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'
-          } transition duration-200`}
-        >
-          {isSubmitting ? 'Mengirim...' : 'Daftar Sekarang'}
-        </button>
+
+        <div className="flex justify-center pt-4">
+          <button
+            type="submit"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            <Send className="w-4 h-4" />
+            Kirim Pendaftaran
+          </button>
+        </div>
       </form>
     </div>
   );
