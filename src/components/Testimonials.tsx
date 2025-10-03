@@ -4,8 +4,8 @@ import { useMemo } from "react";
 const AnggotaKomunitas = () => {
   const anggotaKomunitas = useMemo(() => [
     {
-      name: "Ahmad Rizki Pratama",
-      position: "Ketua Komunitas",
+      name: "Robin Chandra Hidayat",
+      position: "Ketua",
       image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face",
       location: "Mataram, NTB",
       background: "bg-gradient-to-br from-blue-500 to-blue-600"

@@ -25,10 +25,11 @@ const Footer = () => {
           {/* Company Info */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
-                <Users className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-xl font-bold">Komunitas Pemuda NTB</span>
+              <img 
+                src="/logo.png" 
+                alt="Komunitas Pemuda NTB Logo" 
+                className="w-20 h-20 object-contain brightness-0 invert"
+              />
             </div>
             <p className="text-white/80 leading-relaxed">
               Wadah pemuda daerah yang berkarakter, berdaya saing, dan berkontribusi aktif dalam menjaga warisan budaya serta membangun masa depan yang lebih baik.

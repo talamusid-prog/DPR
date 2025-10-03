@@ -83,7 +83,7 @@ const Header = ({ onLogoClick }: HeaderProps) => {
           <div className="hidden md:flex items-center">
             <Button 
               className="gradient-primary text-white hover:shadow-glow transition-smooth"
-              onClick={handleWhatsAppClick}
+              onClick={() => navigate('/registration')}
             >
               Gabung Sekarang
             </Button>

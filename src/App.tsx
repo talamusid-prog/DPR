@@ -17,6 +17,7 @@ import AdminGallery from "./pages/AdminGallery";
 import Portfolio from "./pages/Portfolio";
 import PortfolioDetail from "./components/PortfolioDetail";
 import NotFound from "./pages/NotFound";
+import Registration from "./pages/Registration";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="/blog/:slug" element={<BlogDetail />} />
               <Route path="/portfolio" element={<Portfolio />} />
               <Route path="/portfolio/:slug" element={<PortfolioDetail />} />
+              <Route path="/registration" element={<Registration />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

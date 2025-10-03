@@ -1,4 +1,5 @@
 import { Users, BookOpen, Lightbulb, Heart, Trophy } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const ProgramKomunitas = () => {
   const programs = [
@@ -78,9 +79,11 @@ const ProgramKomunitas = () => {
                </div>
 
                {/* CTA Button */}
-               <button className="w-full lg:w-auto bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold py-3 px-8 rounded-full text-base hover:from-red-600 hover:to-orange-600 hover:shadow-glow transition-all duration-300">
-                 Bergabung Sekarang
-               </button>
+               <Link to="/registration" className="inline-block w-full lg:w-auto">
+                 <div className="w-full lg:w-auto bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold py-3 px-8 rounded-full text-base hover:from-red-600 hover:to-orange-600 hover:shadow-glow transition-all duration-300 text-center cursor-pointer">
+                   Bergabung Sekarang
+                 </div>
+               </Link>
              </div>
 
                                       {/* Right Panel - Programs Grid */}

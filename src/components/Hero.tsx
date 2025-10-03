@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import React from "react";
 import "./Hero.css";
+import { Link } from "react-router-dom";
 
 const Hero = () => {
   return (
@@ -31,13 +32,14 @@ const Hero = () => {
             </div>
 
             <div className="hidden lg:flex flex-col sm:flex-row gap-6 items-center mb-32 lg:mb-0">
-              <Button 
-                size="lg" 
-                className="bg-gradient-to-r from-red-500 to-orange-500 text-white hover:from-red-600 hover:to-orange-600 hover:shadow-glow transition-all duration-300 text-lg px-8 rounded-[30px]"
-              >
-                Gabung Sekarang
-              </Button>
-              
+              <Link to="/registration">
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-red-500 to-orange-500 text-white hover:from-red-600 hover:to-orange-600 hover:shadow-glow transition-all duration-300 text-lg px-8 rounded-[30px]"
+                >
+                  Gabung Sekarang
+                </Button>
+              </Link>
             </div>
           </div>
 
