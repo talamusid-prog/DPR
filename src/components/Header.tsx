@@ -12,12 +12,9 @@ const Header = ({ onLogoClick }: HeaderProps) => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Fungsi untuk membuka WhatsApp dengan format nomor yang benar
-  const handleWhatsAppClick = () => {
-    const phoneNumber = "6285242766676"; // Format nomor WhatsApp dengan kode negara +62
-    const message = "Halo! Saya ingin berkonsultasi tentang pembuatan website. Apakah ada yang bisa dibantu?";
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+  // Fungsi untuk navigasi ke halaman registrasi
+  const handleRegisterClick = () => {
+    navigate('/registration');
   };
 
   // Fungsi untuk menangani navigasi menu
@@ -83,19 +80,21 @@ const Header = ({ onLogoClick }: HeaderProps) => {
           <div className="hidden md:flex items-center">
             <Button 
               className="gradient-primary text-white hover:shadow-glow transition-smooth"
-              onClick={() => navigate('/registration')}
+              onClick={handleRegisterClick}
             >
               Gabung Sekarang
             </Button>
           </div>
 
           {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          <div className="md:hidden flex items-center">
+            <button
+              className="p-2"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Menu */}
@@ -114,11 +113,11 @@ const Header = ({ onLogoClick }: HeaderProps) => {
               <Button 
                 className="gradient-primary text-white mt-2"
                 onClick={() => {
-                  handleWhatsAppClick();
+                  handleRegisterClick();
                   setIsMenuOpen(false);
                 }}
               >
-                Konsultasi Gratis
+                Gabung Sekarang
               </Button>
             </nav>
           </div>

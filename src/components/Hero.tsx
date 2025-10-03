@@ -31,11 +31,11 @@ const Hero = () => {
               </p>
             </div>
 
-            <div className="hidden lg:flex flex-col sm:flex-row gap-6 items-center mb-32 lg:mb-0">
+            <div className="flex flex-col sm:flex-row gap-6 items-start mb-32 lg:mb-0">
               <Link to="/registration">
                 <Button 
-                  size="lg" 
-                  className="bg-gradient-to-r from-red-500 to-orange-500 text-white hover:from-red-600 hover:to-orange-600 hover:shadow-glow transition-all duration-300 text-lg px-8 rounded-[30px]"
+                  size="default" 
+                  className="bg-gradient-to-r from-red-500 to-orange-500 text-white hover:from-red-600 hover:to-orange-600 hover:shadow-glow transition-all duration-300 text-base px-6 rounded-[30px]"
                 >
                   Gabung Sekarang
                 </Button>
@@ -49,7 +49,7 @@ const Hero = () => {
       </div>
       
       {/* Image positioned outside grid */}
-      <div className="absolute -bottom-20 lg:bottom-0 left-0 lg:left-[55vw] lg:transform lg:-translate-x-1/6 z-10">
+      <div className="absolute -bottom-10 lg:bottom-0 left-0 lg:left-[55vw] lg:transform lg:-translate-x-1/6 z-10">
         <img
           src="/jasa1.png"
           alt="Pemuda NTB Pasangkayu"

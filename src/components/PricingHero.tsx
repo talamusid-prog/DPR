@@ -67,7 +67,7 @@ const ProgramKomunitas = () => {
 
                {/* Community Title */}
                <h3 className="text-3xl font-bold text-gray-700 mb-4">
-                 Komunitas Pemuda NTB
+                 IKKBG Pasangkayu
                </h3>
 
                {/* Member Count */}

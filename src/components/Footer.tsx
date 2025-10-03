@@ -5,7 +5,7 @@ const Footer = () => {
 
   const handleWhatsAppClick = () => {
     const phoneNumber = "6285242766676";
-    const message = "Halo! Saya tertarik bergabung dengan Komunitas Pemuda NTB. Bisa info lebih lanjut?";
+    const message = "Halo! Saya tertarik bergabung dengan IKKBG Pasangkayu. Bisa info lebih lanjut?";
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -27,7 +27,7 @@ const Footer = () => {
             <div className="flex items-center space-x-2">
               <img 
                 src="/logo.png" 
-                alt="Komunitas Pemuda NTB Logo" 
+                alt="IKKBG Pasangkayu Logo" 
                 className="w-20 h-20 object-contain brightness-0 invert"
               />
             </div>
@@ -138,7 +138,7 @@ const Footer = () => {
         <div className="border-t border-white/20 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-white/60 text-sm">
-              &copy; {currentYear} Komunitas Pemuda NTB. All rights reserved.
+              &copy; {currentYear} IKKBG Pasangkayu. All rights reserved.
             </p>
             <div className="flex gap-6 text-sm">
               <a href="#" className="text-white/60 hover:text-primary transition-smooth">

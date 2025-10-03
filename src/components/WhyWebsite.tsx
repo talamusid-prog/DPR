@@ -60,7 +60,7 @@ const MengapaBergabung = () => {
           <div className="order-1 lg:order-2 mb-4 lg:mb-0">
             <img
               src="/jasa2.png"
-              alt="Komunitas Pemuda NTB"
+              alt="IKKBG Pasangkayu"
               className="w-11/12 h-auto rounded-lg mx-auto scale-105"
             />
           </div>
