@@ -12,7 +12,7 @@ const KTA = () => {
            </div>
            <h2 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4">
              <span className="gradient-primary bg-clip-text text-transparent">KTA Digital</span>{" "}
-             Komunitas Pemuda NTB
+             IKKBG Pasangkayu
            </h2>
          </div>
 

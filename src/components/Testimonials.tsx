@@ -56,7 +56,7 @@ const AnggotaKomunitas = () => {
             Tim Pengurus
           </div>
           <h2 className="text-3xl lg:text-4xl font-bold text-secondary mb-4">
-            Pengurus Komunitas Pemuda NTB
+            Pengurus IKKBG Pasangkayu
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Kenali tim pengurus yang berdedikasi dalam memajukan komunitas pemuda Nusa Tenggara Barat
