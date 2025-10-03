@@ -61,7 +61,7 @@ const MengapaBergabung = () => {
             <img
               src="/jasa2.png"
               alt="Komunitas Pemuda NTB"
-              className="w-4/5 h-auto rounded-lg mx-auto"
+              className="w-11/12 h-auto rounded-lg mx-auto scale-105"
             />
           </div>
          </div>

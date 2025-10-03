@@ -4,8 +4,8 @@ const ProgramKomunitas = () => {
   const programs = [
     {
       icon: <BookOpen className="w-8 h-8" />,
-      title: "Pelatihan & Workshop",
-      description: "Pengembangan Skill & Kapasitas"
+      title: "Pelatihan",
+      description: "Peningkatan Skill & Kapasitas"
     },
     {
       icon: <Users className="w-8 h-8" />,

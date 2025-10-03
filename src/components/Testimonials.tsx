@@ -44,48 +44,6 @@ const AnggotaKomunitas = () => {
       image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=200&h=200&fit=crop&crop=face",
       location: "Sumbawa",
       background: "bg-gradient-to-br from-teal-500 to-teal-600"
-    },
-    {
-      name: "Agus Prasetyo",
-      position: "Koordinator Acara",
-      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=face",
-      location: "Bima",
-      background: "bg-gradient-to-br from-indigo-500 to-indigo-600"
-    },
-    {
-      name: "Lina Marlina",
-      position: "Koordinator Pendidikan",
-      image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop&crop=face",
-      location: "Dompu",
-      background: "bg-gradient-to-br from-pink-500 to-pink-600"
-    },
-    {
-      name: "Rizki Aditya",
-      position: "Koordinator Teknologi",
-      image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=face",
-      location: "Mataram, NTB",
-      background: "bg-gradient-to-br from-cyan-500 to-cyan-600"
-    },
-    {
-      name: "Sari Dewi",
-      position: "Koordinator Budaya",
-      image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=face",
-      location: "Lombok Tengah",
-      background: "bg-gradient-to-br from-yellow-500 to-yellow-600"
-    },
-    {
-      name: "Dedi Kurniawan",
-      position: "Koordinator Olahraga",
-      image: "https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=200&h=200&fit=crop&crop=face",
-      location: "Lombok Utara",
-      background: "bg-gradient-to-br from-emerald-500 to-emerald-600"
-    },
-    {
-      name: "Maya Sari",
-      position: "Koordinator Sosial",
-      image: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=200&h=200&fit=crop&crop=face",
-      location: "Lombok Timur",
-      background: "bg-gradient-to-br from-violet-500 to-violet-600"
     }
   ], []);
 
@@ -171,7 +129,7 @@ const AnggotaKomunitas = () => {
           <div className="inline-flex items-center gap-2 lg:gap-4 px-4 lg:px-8 py-2 lg:py-4 bg-primary/10 rounded-full">
             <Users className="w-5 h-5 text-primary" />
             <span className="text-primary font-semibold text-sm lg:text-base">
-              12 Pengurus Aktif • 1000+ Anggota Komunitas
+              1000+ Anggota Komunitas
             </span>
           </div>
         </div>
