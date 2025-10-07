@@ -53,6 +53,7 @@ const Header = ({ onLogoClick }: HeaderProps) => {
   const menuItems = [
     { label: "Home", href: "/", isAnchor: false },
     { label: "Profil", href: "/profil", isAnchor: false },
+    { label: "Kalender Kegiatan", href: "/kalender", isAnchor: false },
     { label: "Galeri", href: "/portfolio", isAnchor: false },
     { label: "Berita", href: "/blog", isAnchor: false },
     { label: "Kontak", href: "/contact", isAnchor: false },
