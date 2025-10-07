@@ -142,7 +142,7 @@ const Header = ({ onLogoClick }: HeaderProps) => {
                 <button
                   key={item.label}
                   onClick={() => handleMenuClick(item)}
-                  className="text-foreground hover:text-primary transition-smooth font-medium bg-transparent border-none cursor-pointer text-left"
+                  className="text-white hover:text-blue-200 transition-smooth font-medium bg-transparent border-none cursor-pointer text-left"
                 >
                   {item.label}
                 </button>
