@@ -6,37 +6,37 @@ const Gallery = () => {
   const [hoveredImage, setHoveredImage] = useState<string | null>(null);
 
   // Data gambar dari folder gallery lokal
-  const ntbImages = [
+  const ntbImages = useMemo(() => [
     {
       id: "1",
-      title: "Rapat Komisi IX DPR RI",
+      title: "Penyerahan Hadiah ",
       location: "",
-      category: "Rapat",
+      category: "Event",
       imageUrl: "/gallery/gallery (1).jpeg",
       photographer: "Gallery"
     },
     {
       id: "2", 
-      title: "Reses Dapil NTB",
+      title: "Kunjugan ",
       location: "",
-      category: "Reses",
+      category: "Kunjungan",
       imageUrl: "/gallery/gallery (1).jpg",
       photographer: "Gallery"
     },
     {
       id: "3",
-      title: "Kunjungan ke Masyarakat",
+      title: "Menerima Penghargaan MNC",
       location: "",
       category: "Kunjungan",
-      imageUrl: "/gallery/gallery (2).jpeg",
+      imageUrl: "/gallery/gallery (1).webp",
       photographer: "Gallery"
     },
     {
       id: "4",
-      title: "Bantuan Sosial Masyarakat",
+      title: "Rapat DPR RI",
       location: "",
       category: "Bantuan",
-      imageUrl: "/gallery/gallery (2).jpg",
+      imageUrl: "/gallery/gallery (2).jpeg",
       photographer: "Gallery"
     },
     {
@@ -44,34 +44,26 @@ const Gallery = () => {
       title: "Rapat Koordinasi Program",
       location: "",
       category: "Rapat",
-      imageUrl: "/gallery/gallery (3).jpeg",
+      imageUrl: "/gallery/gallery (2).jpg",
       photographer: "Gallery"
     },
     {
       id: "6",
-      title: "Reses Konsultasi Masyarakat",
+      title: "Penyerahan Bantuan ",
       location: "",
-      category: "Reses",
+      category: "Bantuan",
       imageUrl: "/gallery/gallery (3).jpg",
       photographer: "Gallery"
     },
     {
       id: "7",
-      title: "Kunjungan ke Instansi",
+      title: "Memberi Arahan",
       location: "",
       category: "Kunjungan",
-      imageUrl: "/gallery/gallery (4).jpeg",
-      photographer: "Gallery"
-    },
-    {
-      id: "8",
-      title: "Bantuan Pendidikan",
-      location: "",
-      category: "Bantuan",
-      imageUrl: "/gallery/gallery (5).jpeg",
+      imageUrl: "/gallery/gallery (4).jpg",
       photographer: "Gallery"
     }
-  ];
+  ], []);
 
   // Update kategori yang dipilih
   const handleCategoryChange = (category: string) => {
@@ -113,7 +105,8 @@ const Gallery = () => {
             Gallery Kegiatan
           </h2>
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-0">
-            Dokumentasi kegiatan dan aktivitas Haerul Hadi dalam melayani masyarakat
+            Dokumentasi kegiatan dan aktivitas Dr. Dr. Ir. H. AGUS AMBO DJIWA, M.P.
+ dalam melayani masyarakat
           </p>
         </div>
 

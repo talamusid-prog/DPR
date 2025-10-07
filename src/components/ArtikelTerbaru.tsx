@@ -139,7 +139,7 @@ const ArtikelTerbaru = () => {
         {/* Loading State */}
         {loading && (
           <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
             <p className="mt-2 text-sm text-gray-600">Memuat artikel...</p>
           </div>
         )}
@@ -164,18 +164,18 @@ const ArtikelTerbaru = () => {
                   }`}
                 >
                   <div 
-                    className="bg-white rounded-lg border border-blue-600 transition-all duration-300 p-3 sm:p-4 flex h-28 sm:h-32 cursor-pointer hover:shadow-lg hover:scale-105 group" 
-                    style={{
-                      background: 'linear-gradient(white, white) padding-box, linear-gradient(135deg, #1e40af, #3b82f6) border-box',
-                      border: '1px solid transparent'
-                    }}
+                    className="bg-white rounded-lg border border-red-600 transition-all duration-300 p-3 sm:p-4 flex h-28 sm:h-32 cursor-pointer hover:shadow-lg hover:scale-105 group" 
+                            style={{
+                              background: 'linear-gradient(white, white) padding-box, linear-gradient(135deg, #dc2626, #ef4444) border-box',
+                              border: '1px solid transparent'
+                            }}
                     onClick={() => navigate(`/blog/${artikel.slug}`)}
                   >
                     {/* Number - Moved to left side */}
                     <div className="flex-shrink-0 mr-2 sm:mr-3">
                       <div className="text-3xl sm:text-4xl font-bold italic text-transparent" 
                            style={{ 
-                             WebkitTextStroke: '2px #3B82F6',
+                             WebkitTextStroke: '2px #dc2626',
                              color: 'transparent'
                            }}>
                         {artikel.number}
@@ -190,12 +190,12 @@ const ArtikelTerbaru = () => {
                       </div>
                       
                       {/* Title */}
-                      <h3 className="text-xs sm:text-sm font-bold text-blue-900 mb-1 sm:mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                              <h3 className="text-xs sm:text-sm font-bold text-red-900 mb-1 sm:mb-2 line-clamp-2 group-hover:text-red-600 transition-colors">
                         {artikel.title}
                       </h3>
                       
                       {/* Description */}
-                      <p className="text-xs text-blue-700 line-clamp-2 group-hover:text-blue-800 transition-colors">
+                      <p className="text-xs text-red-700 line-clamp-2 group-hover:text-red-800 transition-colors">
                         {artikel.description}
                       </p>
                     </div>

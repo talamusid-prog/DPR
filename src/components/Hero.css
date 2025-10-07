@@ -2,9 +2,9 @@
   position: absolute;
   inset: 0;
   background-image: 
-    linear-gradient(to right, rgba(59, 130, 246, 0.3) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(59, 130, 246, 0.3) 1px, transparent 1px),
-    linear-gradient(to top, rgba(30, 64, 175, 0.1), rgba(59, 130, 246, 0.2));
+    linear-gradient(to right, rgba(220, 38, 38, 0.3) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(220, 38, 38, 0.3) 1px, transparent 1px),
+    linear-gradient(to top, rgba(185, 28, 28, 0.1), rgba(220, 38, 38, 0.2));
   background-size: 50px 50px, 50px 50px, 100% 100%;
   opacity: 1;
   z-index: 1;

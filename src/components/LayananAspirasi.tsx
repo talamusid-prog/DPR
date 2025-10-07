@@ -18,7 +18,7 @@ const LayananAspirasi = () => {
     },
     {
       icon: <User className="w-5 h-5" />,
-      title: "Profil Bapak Haerul Hadi",
+      title: "Profil Bapak Dr. Ir. H. AGUS AMBO DJIWA, M.P., ",
       description: "Temukan informasi lengkap tentang profil dan visi misi",
       link: "/profil"
     }

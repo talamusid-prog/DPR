@@ -5,7 +5,7 @@ const Footer = () => {
 
   const handleWhatsAppClick = () => {
     const phoneNumber = "6285242766676";
-    const message = "Halo! Saya ingin menyampaikan aspirasi kepada Bapak Haerul Hadi. Bisa info lebih lanjut?";
+    const message = "Halo! Saya ingin menyampaikan aspirasi kepada Bapak Dr. Ir. H. AGUS AMBO DJIWA, M.P.,  Bisa info lebih lanjut?";
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -21,9 +21,9 @@ const Footer = () => {
   return (
     <footer 
       className="text-white"
-      style={{
-        background: 'linear-gradient(to bottom right, #163aa0, #00155b)'
-      }}
+              style={{
+                background: 'linear-gradient(to bottom right, #800000, #4d0000)'
+              }}
     >
       <div className="max-w-6xl mx-auto px-4 py-12">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -32,12 +32,13 @@ const Footer = () => {
             <div className="flex items-center space-x-2">
               <img 
                 src="/logo.png" 
-                alt="Haerul Hadi Logo" 
+                alt="Dr. Dr. Ir. H. AGUS AMBO DJIWA, M.P.
+ Logo" 
                 className="w-20 h-20 object-contain brightness-0 invert"
               />
             </div>
             <p className="text-white/80 leading-relaxed">
-              Anggota DPR RI Komisi IX - Fraksi Partai NasDem yang berkomitmen melayani masyarakat dan menyerap aspirasi untuk kemajuan daerah.
+              Anggota DPR-RI periode 2024-2029 yang berkomitmen melayani masyarakat dan menyerap aspirasi untuk kemajuan daerah.
             </p>
             <div className="flex space-x-4">
               <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-primary transition-smooth">
@@ -161,7 +162,8 @@ const Footer = () => {
         <div className="border-t border-white/20 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-white/60 text-sm">
-              &copy; {currentYear} Haerul Hadi. All rights reserved.
+              &copy; {currentYear} Dr. Dr. Ir. H. AGUS AMBO DJIWA, M.P.
+. All rights reserved.
             </p>
             <div className="flex gap-6 text-sm">
               <a href="#" className="text-white/60 hover:text-primary transition-smooth">

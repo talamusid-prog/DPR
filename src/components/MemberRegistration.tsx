@@ -47,10 +47,10 @@ const MemberRegistration = () => {
           Pendaftaran Anggota
         </div>
         <h2 className="text-3xl font-bold text-secondary mb-4">
-          Formulir Pendaftaran Anggota IKKBG
+          Formulir Pendaftaran Relawan Garis Merah
         </h2>
         <p className="text-muted-foreground">
-          Silakan lengkapi formulir di bawah ini untuk mendaftar sebagai anggota komunitas
+          Silakan lengkapi formulir di bawah ini untuk mendaftar sebagai anggota Relawan Garis Merah
         </p>
       </div>
 

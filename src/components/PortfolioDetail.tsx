@@ -485,7 +485,7 @@ const PortfolioDetail = () => {
                         <Badge 
                           key={index} 
                           variant="secondary" 
-                          className="px-3 py-2 text-sm bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200 hover:text-blue-800 transition-colors"
+                          className="px-3 py-2 text-sm bg-red-100 text-red-700 border-red-200 hover:bg-red-200 hover:text-red-800 transition-colors"
                         >
                           {tech}
                         </Badge>

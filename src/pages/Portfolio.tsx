@@ -113,29 +113,35 @@ const Portfolio = () => {
     <div className="min-h-screen bg-gradient-to-br from-background to-muted">
       <Helmet>
         {/* Basic Meta Tags */}
-        <title>Galeri Haerul Hadi | Menjaga Warisan, Membangun Masa Depan</title>
+        <title>Galeri Dr. Dr. Ir. H. AGUS AMBO DJIWA, M.P.
+ | Menjaga Warisan, Membangun Masa Depan</title>
         <meta name="description" content="Jelajahi galeri foto komunitas pemuda Nusa Tenggara Barat. Lihat keindahan alam, budaya, dan kegiatan komunitas dalam koleksi foto gallery kami." />
-        <meta name="keywords" content="galeri, foto, Haerul Hadi, Nusa Tenggara Barat, budaya, alam, pantai, Lombok, galeri masonry" />
+        <meta name="keywords" content="galeri, foto, Dr. Dr. Ir. H. AGUS AMBO DJIWA, M.P.
+, Nusa Tenggara Barat, budaya, alam, pantai, Lombok, galeri masonry" />
         
         {/* Open Graph Meta Tags */}
-        <meta property="og:title" content="Galeri Haerul Hadi | Menjaga Warisan, Membangun Masa Depan" />
+        <meta property="og:title" content="Galeri Dr. Dr. Ir. H. AGUS AMBO DJIWA, M.P.
+ | Menjaga Warisan, Membangun Masa Depan" />
         <meta property="og:description" content="Jelajahi galeri foto komunitas pemuda Nusa Tenggara Barat. Lihat keindahan alam, budaya, dan kegiatan komunitas dalam koleksi foto gallery kami." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://komunitaspemudantb.org/portfolio" />
-        <meta property="og:site_name" content="Haerul Hadi" />
+        <meta property="og:site_name" content="Dr. Dr. Ir. H. AGUS AMBO DJIWA, M.P.
+" />
         <meta property="og:locale" content="id_ID" />
         
         {/* Open Graph Image - Default gallery image */}
         <meta property="og:image" content="https://komunitaspemudantb.org/logo.png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content="Galeri Haerul Hadi" />
+        <meta property="og:image:alt" content="Galeri Dr. Dr. Ir. H. AGUS AMBO DJIWA, M.P.
+" />
         <meta property="og:image:type" content="image/png" />
         <meta property="og:image:secure_url" content="https://komunitaspemudantb.org/logo.png" />
         
         {/* Twitter Card Meta Tags */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Galeri Haerul Hadi | Menjaga Warisan, Membangun Masa Depan" />
+        <meta name="twitter:title" content="Galeri Dr. Dr. Ir. H. AGUS AMBO DJIWA, M.P.
+ | Menjaga Warisan, Membangun Masa Depan" />
         <meta name="twitter:description" content="Jelajahi galeri foto komunitas pemuda Nusa Tenggara Barat. Lihat keindahan alam, budaya, dan kegiatan komunitas dalam koleksi foto gallery kami." />
         <meta name="twitter:image" content="https://komunitaspemudantb.org/logo.png" />
         <meta name="twitter:site" content="@komunitaspemudantb" />
@@ -154,7 +160,8 @@ const Portfolio = () => {
             Galeri Komunitas
           </div>
           <h1 className="text-4xl font-bold text-secondary mb-4">
-            Galeri Masonry Haerul Hadi
+            Galeri Masonry Dr. Dr. Ir. H. AGUS AMBO DJIWA, M.P.
+
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Jelajahi keindahan Nusa Tenggara Barat dan kegiatan komunitas dalam galeri foto masonry

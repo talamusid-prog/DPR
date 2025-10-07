@@ -9,7 +9,7 @@ const KalenderKegiatan = () => {
   const kegiatanData = [
     {
       id: 1,
-      title: "Rapat Komisi IX DPR RI",
+      title: "Penyerahan Hadiah ",
       date: new Date(2024, 11, 15),
       time: "09:00 - 12:00",
       location: "Gedung DPR RI, Jakarta",
@@ -102,7 +102,7 @@ const KalenderKegiatan = () => {
   const getTypeColor = (type: string) => {
     switch (type) {
       case "Rapat":
-        return "bg-blue-100 text-blue-800 border-blue-200";
+        return "bg-red-100 text-red-800 border-red-200";
       case "Kunjungan":
         return "bg-green-100 text-green-800 border-green-200";
       case "Sosialisasi":
@@ -202,7 +202,8 @@ const KalenderKegiatan = () => {
             <span className="gradient-primary bg-clip-text text-transparent">Jadwal Kegiatan</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Ikuti jadwal kegiatan dan agenda Bapak Haerul Hadi, S.Pd., M.H.
+            Ikuti jadwal kegiatan dan agenda Bapak Dr. Dr. Ir. H. AGUS AMBO DJIWA, M.P.
+, 
           </p>
         </div>
 

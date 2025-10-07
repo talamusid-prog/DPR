@@ -1,4 +1,5 @@
--- Gallery Images Table untuk Haerul Hadi
+-- Gallery Images Table untuk Dr. Dr. Ir. H. AGUS AMBO DJIWA, M.P.
+
 CREATE TABLE IF NOT EXISTS gallery_images (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
@@ -58,7 +59,9 @@ CREATE POLICY "Gallery images are deletable by authenticated users" ON gallery_i
 INSERT INTO gallery_images (title, description, slug, image_url, location, category, photographer, status, featured) VALUES
 ('Pantai Senggigi yang Memukau', 'Keindahan pantai Senggigi dengan pasir putih dan air laut yang jernih, destinasi wisata favorit di Lombok', 'pantai-senggigi-memukau', 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=2070&auto=format&fit=crop', 'Senggigi, Lombok Barat', 'Pantai', 'Admin', 'published', true),
 ('Gunung Rinjani Megah', 'Pemandangan spektakuler Gunung Rinjani, gunung tertinggi kedua di Indonesia yang menjadi kebanggaan NTB', 'gunung-rinjani-megah', 'https://images.unsplash.com/photo-1600057791880-79d161154121?q=80&w=2070&auto=format&fit=crop', 'Lombok, NTB', 'Alam', 'Admin', 'published', true),
-('Budaya Sasak Tradisional', 'Pertunjukan tari tradisional Sasak dalam acara budaya Haerul Hadi', 'budaya-sasak-tradisional', 'https://images.unsplash.com/photo-1545558014-8692077e9b5c?q=80&w=2070&auto=format&fit=crop', 'Mataram, NTB', 'Budaya', 'Haerul Hadi', 'published', false),
+('Budaya Sasak Tradisional', 'Pertunjukan tari tradisional Sasak dalam acara budaya Dr. Dr. Ir. H. AGUS AMBO DJIWA, M.P.
+', 'budaya-sasak-tradisional', 'https://images.unsplash.com/photo-1545558014-8692077e9b5c?q=80&w=2070&auto=format&fit=crop', 'Mataram, NTB', 'Budaya', 'Dr. Dr. Ir. H. AGUS AMBO DJIWA, M.P.
+', 'published', false),
 ('Gili Trawangan Paradise', 'Keindahan Gili Trawangan dengan air laut biru jernih dan kehidupan bawah laut yang menakjubkan', 'gili-trawangan-paradise', 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?q=80&w=2070&auto=format&fit=crop', 'Gili Trawangan, NTB', 'Pulau', 'Admin', 'published', false),
 ('Kegiatan Komunitas Pemuda', 'Foto bersama anggota komunitas dalam kegiatan pemberdayaan pemuda daerah', 'kegiatan-komunitas-pemuda', 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2070&auto=format&fit=crop', 'Mataram, NTB', 'Kegiatan Komunitas', 'Dokumentasi Komunitas', 'published', false);
 
@@ -67,7 +70,8 @@ GRANT SELECT ON gallery_images TO anon;
 GRANT ALL ON gallery_images TO authenticated;
 
 -- Comment pada tabel
-COMMENT ON TABLE gallery_images IS 'Tabel untuk menyimpan foto-foto galeri Haerul Hadi';
+COMMENT ON TABLE gallery_images IS 'Tabel untuk menyimpan foto-foto galeri Dr. Dr. Ir. H. AGUS AMBO DJIWA, M.P.
+';
 COMMENT ON COLUMN gallery_images.title IS 'Judul foto';
 COMMENT ON COLUMN gallery_images.description IS 'Deskripsi foto atau cerita di balik foto';
 COMMENT ON COLUMN gallery_images.slug IS 'URL-friendly identifier untuk foto';

@@ -18,9 +18,9 @@ All colors MUST be HSL.
     --popover-foreground: 0 0% 16%;
 
     /* Brand Colors */
-    --primary: 238 100% 68%; /* #5b61ff */
+    --primary: 0 84% 60%; /* #dc2626 - Red-600 */
     --primary-foreground: 0 0% 98%;
-    --primary-dark: 238 45% 39%; /* #353893 */
+    --primary-dark: 0 100% 25%; /* #800000 - Dark Maroon */
 
     --secondary: 0 0% 16%; /* #282828 */
     --secondary-foreground: 0 0% 98%;
@@ -44,7 +44,7 @@ All colors MUST be HSL.
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 238 100% 68%;
+    --ring: 0 84% 60%;
 
     --radius: 0.75rem;
 
@@ -62,7 +62,7 @@ All colors MUST be HSL.
 
     --sidebar-border: 220 13% 91%;
 
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 0 84% 60%;
   }
 
   .dark {
@@ -75,8 +75,8 @@ All colors MUST be HSL.
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 0 84% 60%; /* #dc2626 - Red-600 */
+    --primary-foreground: 0 0% 98%;
 
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
@@ -100,7 +100,7 @@ All colors MUST be HSL.
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 0 84% 60%;
   }
 }
 

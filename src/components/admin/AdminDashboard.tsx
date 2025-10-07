@@ -139,7 +139,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                 onClick={() => setActiveTab("dashboard")}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                   activeTab === "dashboard" 
-                    ? "bg-blue-50 text-blue-700 border border-blue-200" 
+                    ? "bg-red-50 text-red-700 border border-red-200" 
                     : "text-gray-700 hover:bg-gray-50"
                 }`}
               >
@@ -151,7 +151,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                 onClick={() => setActiveTab("posts")}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                   activeTab === "posts" 
-                    ? "bg-blue-50 text-blue-700 border border-blue-200" 
+                    ? "bg-red-50 text-red-700 border border-red-200" 
                     : "text-gray-700 hover:bg-gray-50"
                 }`}
               >
@@ -171,7 +171,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                 onClick={() => setActiveTab("analytics")}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                   activeTab === "analytics" 
-                    ? "bg-blue-50 text-blue-700 border border-blue-200" 
+                    ? "bg-red-50 text-red-700 border border-red-200" 
                     : "text-gray-700 hover:bg-gray-50"
                 }`}
               >
@@ -183,7 +183,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                 onClick={() => setActiveTab("settings")}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                   activeTab === "settings" 
-                    ? "bg-blue-50 text-blue-700 border border-blue-200" 
+                    ? "bg-red-50 text-red-700 border border-red-200" 
                     : "text-gray-700 hover:bg-gray-50"
                 }`}
               >
@@ -277,7 +277,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                 <CardContent>
                   {loading ? (
                     <div className="text-center py-8">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
                       <p className="mt-2 text-sm text-gray-600">Memuat artikel...</p>
                     </div>
                   ) : posts.length === 0 ? (
@@ -362,7 +362,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                 <CardContent className="p-0">
                   {loading ? (
                     <div className="text-center py-12">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
                       <p className="mt-2 text-sm text-gray-600">Memuat artikel...</p>
                     </div>
                   ) : filteredPosts.length === 0 ? (

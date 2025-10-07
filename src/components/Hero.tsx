@@ -6,7 +6,7 @@ import "./Hero.css";
 
 const Hero = () => {
   return (
-    <section id="home" className="pt-4 lg:pt-8 lg:mt-0 pb-56 sm:pb-48 lg:pb-24 min-h-[85vh] sm:min-h-[75vh] lg:min-h-auto bg-gradient-to-br from-blue-600 to-blue-800 relative overflow-hidden">
+    <section id="home" className="pt-4 lg:pt-8 lg:mt-0 pb-56 sm:pb-48 lg:pb-24 min-h-[85vh] sm:min-h-[75vh] lg:min-h-auto bg-gradient-to-br from-red-600 to-red-800 relative overflow-hidden">
       {/* Grid lines background */}
       <div className="grid-background" />
       
@@ -21,17 +21,18 @@ const Hero = () => {
                 </div>
                 <h1 className="text-5xl sm:text-4xl lg:text-7xl font-bold text-white leading-none lg:leading-tight">
                   <span className="text-white">
-                    Haerul Hadi
+                    Dr. Dr. Ir. H. AGUS AMBO DJIWA, M.P.
+
                   </span>
                   <br />
                   <span className="text-5xl sm:text-4xl lg:text-7xl font-bold text-white">
                     <span className="text-white">
-                      S.Pd., M.H.
+                      
                     </span>
                   </span>
                 </h1>
                 <p className="text-lg lg:text-xl text-white/90 leading-relaxed">
-                  Anggota DPR RI Komisi IX - Fraksi Partai NasDem
+                  Anggota DPR-RI periode 2024-2029
                 </p>
               </div>
             </div>
