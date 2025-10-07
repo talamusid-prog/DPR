@@ -160,11 +160,10 @@ const Portfolio = () => {
             Galeri Komunitas
           </div>
           <h1 className="text-4xl font-bold text-secondary mb-4">
-            Galeri Masonry Dr. Ir. H. AGUS AMBO DJIWA, M.P.
-
+            Galeri Dr. Ir. H. AGUS AMBO DJIWA, M.P.
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Jelajahi keindahan Nusa Tenggara Barat dan kegiatan komunitas dalam galeri foto masonry
+            Dokumentasi kegiatan dan aktivitas 
           </p>
         </div>
 
