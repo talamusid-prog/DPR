@@ -5,7 +5,7 @@ const Footer = () => {
 
   const handleWhatsAppClick = () => {
     const phoneNumber = "6285242766676";
-    const message = "Halo! Saya tertarik bergabung dengan IKKBG Pasangkayu. Bisa info lebih lanjut?";
+    const message = "Halo! Saya tertarik bergabung dengan Haerul Hadi. Bisa info lebih lanjut?";
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -19,7 +19,12 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-secondary text-white">
+    <footer 
+      className="text-white"
+      style={{
+        background: 'linear-gradient(to bottom right, #163aa0, #00155b)'
+      }}
+    >
       <div className="max-w-6xl mx-auto px-4 py-12">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
@@ -27,7 +32,7 @@ const Footer = () => {
             <div className="flex items-center space-x-2">
               <img 
                 src="/logo.png" 
-                alt="IKKBG Pasangkayu Logo" 
+                alt="Haerul Hadi Logo" 
                 className="w-20 h-20 object-contain brightness-0 invert"
               />
             </div>
@@ -138,7 +143,7 @@ const Footer = () => {
         <div className="border-t border-white/20 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-white/60 text-sm">
-              &copy; {currentYear} IKKBG Pasangkayu. All rights reserved.
+              &copy; {currentYear} Haerul Hadi. All rights reserved.
             </p>
             <div className="flex gap-6 text-sm">
               <a href="#" className="text-white/60 hover:text-primary transition-smooth">

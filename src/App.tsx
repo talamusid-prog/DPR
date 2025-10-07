@@ -18,6 +18,9 @@ import Portfolio from "./pages/Portfolio";
 import PortfolioDetail from "./components/PortfolioDetail";
 import NotFound from "./pages/NotFound";
 import Registration from "./pages/Registration";
+import AspirasiPage from "./pages/AspirasiPage";
+import KalenderPage from "./pages/KalenderPage";
+import ProfilPage from "./pages/ProfilPage";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +44,9 @@ const App = () => (
               <Route path="/portfolio" element={<Portfolio />} />
               <Route path="/portfolio/:slug" element={<PortfolioDetail />} />
               <Route path="/registration" element={<Registration />} />
+              <Route path="/aspirasi" element={<AspirasiPage />} />
+              <Route path="/kalender" element={<KalenderPage />} />
+              <Route path="/profil" element={<ProfilPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

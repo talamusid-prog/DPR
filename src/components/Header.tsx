@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
@@ -11,6 +11,18 @@ const Header = ({ onLogoClick }: HeaderProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  // Effect untuk mendeteksi scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      setIsScrolled(scrollTop > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Fungsi untuk navigasi ke halaman registrasi
   const handleRegisterClick = () => {
@@ -40,14 +52,18 @@ const Header = ({ onLogoClick }: HeaderProps) => {
 
   const menuItems = [
     { label: "Home", href: "/", isAnchor: false },
-    { label: "Tentang Kami", href: "#pricing", isAnchor: true },
+    { label: "Profil", href: "/profil", isAnchor: false },
     { label: "Galeri", href: "/portfolio", isAnchor: false },
     { label: "Berita", href: "/blog", isAnchor: false },
     { label: "Kontak", href: "/contact", isAnchor: false },
   ];
 
   return (
-    <header className="sticky top-0 left-0 right-0 z-50 bg-white/10 backdrop-blur-xl border-b border-white/20 shadow-lg shadow-black/5">
+    <header className={`sticky top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      isScrolled 
+        ? 'bg-white/10 backdrop-blur-xl border-b border-white/20 shadow-lg shadow-black/5' 
+        : 'bg-gradient-to-br from-blue-600 to-blue-800'
+    }`}>
               <div className="max-w-6xl mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
@@ -64,9 +80,13 @@ const Header = ({ onLogoClick }: HeaderProps) => {
             <img 
               src="/logo.png" 
               alt="Ideadigiralcreative Logo" 
-              className="w-20 h-20 md:w-28 md:h-28 object-contain"
+              className="w-12 h-12 md:w-16 md:h-16 object-contain"
             />
-            
+            <img 
+              src="/logo2.png" 
+              alt="Logo Kedua" 
+              className="w-12 h-12 md:w-16 md:h-16 object-contain"
+            />
           </div>
 
           {/* Desktop Navigation */}
@@ -75,7 +95,11 @@ const Header = ({ onLogoClick }: HeaderProps) => {
               <button
                 key={item.label}
                 onClick={() => handleMenuClick(item)}
-                className="text-foreground hover:text-primary transition-smooth font-medium bg-transparent border-none cursor-pointer text-sm lg:text-base"
+                className={`transition-smooth font-medium bg-transparent border-none cursor-pointer text-sm lg:text-base ${
+                  isScrolled 
+                    ? 'text-foreground hover:text-primary' 
+                    : 'text-white hover:text-blue-200'
+                }`}
               >
                 {item.label}
               </button>
@@ -85,17 +109,23 @@ const Header = ({ onLogoClick }: HeaderProps) => {
           {/* CTA Button */}
           <div className="hidden md:flex items-center">
             <Button 
-              className="gradient-primary text-white hover:shadow-glow transition-smooth"
+              className={`transition-smooth ${
+                isScrolled 
+                  ? 'gradient-primary text-white hover:shadow-glow' 
+                  : 'bg-white/20 text-white border border-white/30 hover:bg-white/30 hover:shadow-lg'
+              }`}
               onClick={handleRegisterClick}
             >
-              Gabung Sekarang
+              Daftar
             </Button>
           </div>
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center">
             <button
-              className="p-2"
+              className={`p-2 transition-colors ${
+                isScrolled ? 'text-foreground' : 'text-white'
+              }`}
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -123,7 +153,7 @@ const Header = ({ onLogoClick }: HeaderProps) => {
                   setIsMenuOpen(false);
                 }}
               >
-                Gabung Sekarang
+                Daftar
               </Button>
             </nav>
           </div>

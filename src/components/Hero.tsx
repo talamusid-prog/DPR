@@ -1,43 +1,49 @@
-import { Button } from "@/components/ui/button";
 import React from "react";
-import "./Hero.css";
+import { Button } from "@/components/ui/button";
+import { MessageSquare } from "lucide-react";
 import { Link } from "react-router-dom";
+import "./Hero.css";
 
 const Hero = () => {
   return (
-    <section id="home" className="pt-8 lg:pt-16 lg:mt-0 pb-60 lg:pb-32 bg-gradient-to-br from-background to-muted relative overflow-hidden">
+    <section id="home" className="pt-4 lg:pt-8 lg:mt-0 pb-56 sm:pb-48 lg:pb-24 bg-gradient-to-br from-blue-600 to-blue-800 relative overflow-hidden">
       {/* Grid lines background */}
       <div className="grid-background" />
       
       <div className="max-w-6xl mx-auto px-4 relative" style={{ zIndex: 1 }}>
         <div className="grid lg:grid-cols-3 gap-12 items-end">
           {/* Left Content */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-8 mt-8 sm:mt-12 lg:mt-20">
             <div className="space-y-4">
-              <h1 className="text-4xl lg:text-7xl font-bold text-secondary leading-none lg:leading-tight">
-                <span className="gradient-primary bg-clip-text text-transparent">
-                  Menjaga Warisan
-                </span>
-                <br />
-                <span className="gradient-primary bg-clip-text text-transparent">
-                  Membangun{" "}
-                </span>
-                <span className="bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
-                  Masa Depan
-                </span>
-              </h1>
-              <p className="text-lg text-muted-foreground leading-relaxed">
-              Komunitas yang menghubungkan akar budaya dengan semangat inovasi, menjadikan pemuda sebagai motor perubahan.
-              </p>
+              <div className="space-y-2">
+                <div className="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-md border-2 border-white text-white text-sm lg:text-base font-medium rounded-full shadow-lg">
+                  Official Website
+                </div>
+                <h1 className="text-4xl lg:text-7xl font-bold text-white leading-none lg:leading-tight">
+                  <span className="text-white">
+                    Haerul Hadi
+                  </span>
+                  <br />
+                  <span className="text-4xl lg:text-7xl font-bold text-white">
+                    <span className="text-white">
+                      S.Pd., M.H.
+                    </span>
+                  </span>
+                </h1>
+                <p className="text-lg lg:text-xl text-white/90 leading-relaxed">
+                  Anggota DPR RI Komisi IX - Fraksi Partai NasDem
+                </p>
+              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-6 items-start mb-32 lg:mb-0">
-              <Link to="/registration">
+              <Link to="/aspirasi">
                 <Button 
                   size="default" 
-                  className="bg-gradient-to-r from-red-500 to-orange-500 text-white hover:from-red-600 hover:to-orange-600 hover:shadow-glow transition-all duration-300 text-base px-6 rounded-[30px]"
+                  className="bg-gradient-to-r from-red-500 to-orange-500 text-white hover:from-red-600 hover:to-orange-600 hover:shadow-glow transition-all duration-300 text-base px-6 py-3 rounded-[30px] flex items-center gap-2"
                 >
-                  Gabung Sekarang
+                  <MessageSquare className="w-5 h-5" />
+                  Kirim Aspirasi
                 </Button>
               </Link>
             </div>
@@ -49,11 +55,11 @@ const Hero = () => {
       </div>
       
       {/* Image positioned outside grid */}
-      <div className="absolute -bottom-10 lg:bottom-0 left-0 lg:left-[55vw] lg:transform lg:-translate-x-1/6 z-10">
+      <div className="absolute -bottom-8 sm:-bottom-6 md:-bottom-4 lg:bottom-0 left-0 lg:left-[60vw] lg:transform lg:-translate-x-1/4 z-10">
         <img
           src="/jasa1.png"
           alt="Pemuda NTB Pasangkayu"
-          className="w-full h-auto scale-110 lg:w-auto lg:max-h-[110vh] xl:max-h-[115vh] lg:object-contain"
+          className="w-full h-auto scale-60 sm:scale-65 md:scale-70 lg:scale-85 lg:w-auto lg:max-h-[65vh] xl:max-h-[70vh] lg:object-contain"
         />
       </div>
     </section>

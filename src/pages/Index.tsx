@@ -1,5 +1,7 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
+import ArtikelTerbaru from "@/components/ArtikelTerbaru";
+import LayananAspirasi from "@/components/LayananAspirasi";
 import Blog from "@/components/Blog";
 import Gallery from "@/components/Portfolio";
 import Process from "@/components/Process";
@@ -17,6 +19,8 @@ const Index = () => {
       <Header />
       <main>
         <Hero />
+        <ArtikelTerbaru />
+        <LayananAspirasi />
         <Process />
         <PricingHero />
         <WhyWebsite />

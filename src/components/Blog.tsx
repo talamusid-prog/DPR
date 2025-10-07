@@ -1,20 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Autoplay } from 'swiper/modules';
-import type { Swiper as SwiperType } from 'swiper';
-
-// Import Swiper styles
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-
-// Import custom styles
-import './Blog.css';
-
+import { BookOpen, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { getPublishedPosts } from "@/lib/blogService";
 import { BlogPost } from "@/lib/supabase";
 
@@ -22,7 +9,7 @@ const Blog = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
-  const swiperRef = useRef<SwiperType>();
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   // Load posts on component mount
   useEffect(() => {
@@ -41,152 +28,229 @@ const Blog = () => {
     }
   };
 
+  // Dummy data untuk demo
+  const dummyPosts = [
+    {
+      id: 1,
+      title: "Keberadaan KEK Sanur Harus Seiring dengan Identitas Sejarah dan Budaya Bali",
+      excerpt: "Pembangunan Kawasan Ekonomi Khusus (KEK) Sanur harus memperhatikan aspek sejarah dan budaya Bali yang kental.",
+      featured_image: "/berita1.jpg",
+      created_at: "2025-10-06",
+      slug: "keberadaan-kek-sanur"
+    },
+    {
+      id: 2,
+      title: "BUMN Didorong Tingkatkan Kontribusi pada Pembangunan",
+      excerpt: "Pemerintah mendorong BUMN untuk meningkatkan kontribusi dalam pembangunan nasional.",
+      featured_image: "/berita2.jpg",
+      created_at: "2025-10-06",
+      slug: "bumn-didorong-tingkatkan-kontribusi"
+    },
+    {
+      id: 3,
+      title: "TNI tidak boleh Terjebak Struktur Usang tapi",
+      excerpt: "TNI harus terus beradaptasi dengan perkembangan zaman dan tidak terjebak dalam struktur usang.",
+      featured_image: "/berita3.jpg",
+      created_at: "2025-10-06",
+      slug: "tni-tidak-boleh-terjebak-struktur"
+    },
+    {
+      id: 4,
+      title: "Legislator NasDem: Pelayanan Harus Relevan dengan",
+      excerpt: "Legislator NasDem menekankan pentingnya pelayanan yang relevan dengan kebutuhan masyarakat.",
+      featured_image: "/berita4.jpg",
+      created_at: "2025-10-06",
+      slug: "legislator-nasdem-pelayanan-harus-relevan"
+    },
+    {
+      id: 5,
+      title: "Muslim Ayub Minta Usut Tuntas Dugaan Pelanggaran HAM di",
+      excerpt: "Muslim Ayub meminta agar dugaan pelanggaran HAM diselidiki secara tuntas.",
+      featured_image: "/berita5.jpg",
+      created_at: "2025-10-06",
+      slug: "muslim-ayub-minta-usut-tuntas"
+    }
+  ];
+
+  const displayPosts = posts.length > 0 ? posts : dummyPosts;
+  const featuredPost = displayPosts[0];
+  const sidebarPosts = displayPosts.slice(1, 5);
+
+  // Auto slide functionality
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % displayPosts.length);
+    }, 5000); // Change slide every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [displayPosts.length]);
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % displayPosts.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + displayPosts.length) % displayPosts.length);
+  };
+
 
 
   return (
-    <section id="blog" className="py-16 bg-gradient-to-br from-background to-muted">
+    <section id="blog" className="pt-12 pb-16 bg-white">
       <div className="max-w-6xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium mb-4">
             <BookOpen className="w-4 h-4" />
-            Blog & Artikel
+            BERITA TERBARU
           </div>
-          <h2 className="text-3xl lg:text-4xl font-bold text-secondary mb-4">
-            Blog & Artikel
+          <h2 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4">
+            Berita Terbaru
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Temukan tips, tutorial, dan insight terbaru seputar web development, 
-            desain, dan teknologi digital untuk mengembangkan bisnis Anda.
-          </p>
         </div>
-
-
 
         {/* Loading State */}
         {loading && (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Memuat artikel...</p>
+            <p className="mt-4 text-muted-foreground">Memuat berita...</p>
           </div>
         )}
 
-        {/* Posts Grid */}
-        {!loading && (
-          <>
-            {posts.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground text-lg">
-                  Belum ada artikel yang dipublikasikan.
-                </p>
-              </div>
-            ) : (
+        {/* Main Content */}
+        {!loading && displayPosts.length > 0 && (
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Featured Article - Left Column */}
+            <div className="lg:col-span-2">
               <div className="relative">
-                {/* Custom Navigation Buttons */}
-                <div className="flex justify-between items-center mb-6">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="swiper-button-prev-custom bg-white/80 backdrop-blur-sm border-white/20 hover:bg-white/90 transition-all duration-300"
-                    onClick={() => {
-                      if (swiperRef.current) swiperRef.current.slidePrev();
-                    }}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="swiper-button-next-custom bg-white/80 backdrop-blur-sm border-white/20 hover:bg-white/90 transition-all duration-300"
-                    onClick={() => {
-                      if (swiperRef.current) swiperRef.current.slideNext();
-                    }}
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                {/* Swiper Container */}
-                <Swiper
-                  className="blog-swiper"
-                  modules={[Navigation, Pagination, Autoplay]}
-                  spaceBetween={32}
-                  slidesPerView={1}
-                  onSwiper={(swiper) => {
-                    swiperRef.current = swiper;
-                  }}
-                  navigation={{
-                    prevEl: '.swiper-button-prev-custom',
-                    nextEl: '.swiper-button-next-custom',
-                  }}
-                  pagination={{
-                    clickable: true,
-                    el: '.swiper-pagination-custom',
-                  }}
-                  autoplay={{
-                    delay: 5000,
-                    disableOnInteraction: false,
-                  }}
-                  breakpoints={{
-                    640: {
-                      slidesPerView: 2,
-                      spaceBetween: 24,
-                    },
-                    1024: {
-                      slidesPerView: 3,
-                      spaceBetween: 32,
-                    },
-                  }}
-                  loop={posts.length > 3}
-                >
-                  {posts.slice(0, 6).map((post) => (
-                    <SwiperSlide key={post.id}>
-                      <Card 
-                        className="group hover:shadow-lg transition-all duration-300 border-border hover:border-primary/50 cursor-pointer h-full"
+                {/* Slide Container */}
+                <div className="relative h-96 rounded-2xl overflow-hidden">
+                  {displayPosts.map((post, index) => (
+                    <div
+                      key={post.id}
+                      className={`absolute inset-0 transition-opacity duration-500 ${
+                        index === currentSlide ? 'opacity-100' : 'opacity-0'
+                      }`}
+                    >
+                      <div 
+                        className="relative group cursor-pointer h-full" 
                         onClick={() => navigate(`/blog/${post.slug}`)}
                       >
-                        <CardHeader className="pb-4">
-                          {post.featured_image && (
-                            <div className="aspect-video overflow-hidden rounded-lg mb-4">
-                              <img
-                                src={post.featured_image}
-                                alt={post.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                              />
-                            </div>
-                          )}
-                          <CardTitle className="text-xl font-bold text-secondary group-hover:text-primary transition-colors line-clamp-2">
+                        <img
+                          src={post.featured_image || `/berita${index + 1}.jpg`}
+                          alt={post.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        {/* Dark Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                        
+                        {/* Content Overlay */}
+                        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                          <div className="text-sm text-white/80 mb-2">
+                            {new Date(post.created_at).toLocaleDateString('id-ID', { 
+                              day: '2-digit', 
+                              month: 'short', 
+                              year: 'numeric' 
+                            })}
+                          </div>
+                          <h3 className="text-2xl lg:text-3xl font-bold text-blue-300 leading-tight">
                             {post.title}
-                          </CardTitle>
-                          <CardDescription className="line-clamp-3">
-                            {post.excerpt}
-                          </CardDescription>
-                        </CardHeader>
-                      </Card>
-                    </SwiperSlide>
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
                   ))}
-                </Swiper>
+                </div>
 
-                {/* Custom Pagination */}
-                <div className="swiper-pagination-custom flex justify-center mt-6"></div>
+                {/* Navigation Arrows */}
+                <button
+                  onClick={prevSlide}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all duration-300"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={nextSlide}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all duration-300"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+
+                {/* Pagination Dots */}
+                <div className="flex justify-center mt-6 space-x-2">
+                  {displayPosts.map((_, index) => (
+                    <button
+                      key={index}
+                      className={`w-3 h-3 rounded-full transition-colors ${
+                        index === currentSlide ? 'bg-blue-600' : 'bg-white border-2 border-gray-300'
+                      }`}
+                      onClick={() => setCurrentSlide(index)}
+                    />
+                  ))}
+                </div>
               </div>
-            )}
-          </>
-        )}
+            </div>
 
-        {/* Load More Button (if needed) */}
-        {!loading && posts.length > 6 && (
-          <div className="text-center mt-12">
-            <Button 
-              onClick={() => navigate('/blog')}
-              variant="outline" 
-              size="lg"
-              className="border-primary text-primary hover:bg-primary hover:text-white transition-colors"
-            >
-              Lihat Semua Artikel
-            </Button>
+            {/* Sidebar Articles - Right Column */}
+            <div className="lg:col-span-1">
+              <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+                {sidebarPosts.map((post, index) => (
+                  <div 
+                    key={post.id}
+                    className={`flex gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer group transition-colors ${
+                      index >= 2 ? 'hidden lg:flex' : ''
+                    }`}
+                    onClick={() => navigate(`/blog/${post.slug}`)}
+                  >
+                    {/* Thumbnail */}
+                    <div className="flex-shrink-0">
+                      <img
+                        src={post.featured_image || `/berita${index + 2}.jpg`}
+                        alt={post.title}
+                        className="w-20 h-20 object-cover rounded-lg"
+                      />
+                    </div>
+                    
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      {/* Category Tag */}
+                      <div className="inline-block px-2 py-1 bg-blue-600 text-white text-xs font-medium rounded mb-2">
+                        BERITA TERBARU
+                      </div>
+                      
+                      {/* Title */}
+                      <h4 className="text-sm font-semibold text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-2 mb-1">
+                        {post.title}
+                      </h4>
+                      
+                      {/* Date */}
+                      <p className="text-xs text-gray-500">
+                        {new Date(post.created_at).toLocaleDateString('id-ID', { 
+                          day: '2-digit', 
+                          month: 'short', 
+                          year: 'numeric' 
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
+
+        {/* View All Button */}
+        <div className="text-center mt-12">
+          <Button 
+            onClick={() => navigate('/blog')}
+            variant="outline" 
+            size="lg"
+            className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors px-8 py-3 rounded-lg flex items-center gap-2 mx-auto"
+          >
+            Lihat Semua Berita
+            <ArrowRight className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
     </section>
   );

@@ -1,83 +1,75 @@
 import { useState, useMemo } from "react";
-import { Eye, Filter, ArrowRight, MapPin } from "lucide-react";
+import { Filter, ArrowRight } from "lucide-react";
 
 const Gallery = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [hoveredImage, setHoveredImage] = useState<string | null>(null);
 
-  // Data gambar NTB dari Unsplash
+  // Data gambar dari folder gallery lokal
   const ntbImages = [
     {
       id: "1",
-      title: "Gunung Rinjani",
-      location: "Lombok",
-      category: "Alam",
-      imageUrl: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&h=600&fit=crop",
-      photographer: "Unsplash"
+      title: "Rapat Komisi IX DPR RI",
+      location: "",
+      category: "Rapat",
+      imageUrl: "/gallery/gallery (1).jpeg",
+      photographer: "Gallery"
     },
     {
       id: "2", 
-      title: "Pantai Pink Lombok",
-      location: "Lombok Timur",
-      category: "Pantai",
-      imageUrl: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=1000&fit=crop",
-      photographer: "Unsplash"
+      title: "Reses Dapil NTB",
+      location: "",
+      category: "Reses",
+      imageUrl: "/gallery/gallery (1).jpg",
+      photographer: "Gallery"
     },
     {
       id: "3",
-      title: "Gili Trawangan",
-      location: "Gili Islands",
-      category: "Pulau",
-      imageUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop",
-      photographer: "Unsplash"
+      title: "Kunjungan ke Masyarakat",
+      location: "",
+      category: "Kunjungan",
+      imageUrl: "/gallery/gallery (2).jpeg",
+      photographer: "Gallery"
     },
     {
       id: "4",
-      title: "Air Terjun Sendang Gile",
-      location: "Lombok Utara",
-      category: "Alam",
-      imageUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=800&fit=crop",
-      photographer: "Unsplash"
+      title: "Bantuan Sosial Masyarakat",
+      location: "",
+      category: "Bantuan",
+      imageUrl: "/gallery/gallery (2).jpg",
+      photographer: "Gallery"
     },
     {
       id: "5",
-      title: "Pantai Kuta Lombok",
-      location: "Lombok Selatan",
-      category: "Pantai",
-      imageUrl: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop",
-      photographer: "Unsplash"
+      title: "Rapat Koordinasi Program",
+      location: "",
+      category: "Rapat",
+      imageUrl: "/gallery/gallery (3).jpeg",
+      photographer: "Gallery"
     },
     {
       id: "6",
-      title: "Kampung Sasak",
-      location: "Lombok Tengah",
-      category: "Budaya",
-      imageUrl: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&h=1000&fit=crop",
-      photographer: "Unsplash"
+      title: "Reses Konsultasi Masyarakat",
+      location: "",
+      category: "Reses",
+      imageUrl: "/gallery/gallery (3).jpg",
+      photographer: "Gallery"
     },
     {
       id: "7",
-      title: "Danau Segara Anak",
-      location: "Gunung Rinjani",
-      category: "Alam",
-      imageUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop",
-      photographer: "Unsplash"
+      title: "Kunjungan ke Instansi",
+      location: "",
+      category: "Kunjungan",
+      imageUrl: "/gallery/gallery (4).jpeg",
+      photographer: "Gallery"
     },
     {
       id: "8",
-      title: "Gili Meno",
-      location: "Gili Islands",
-      category: "Pulau",
-      imageUrl: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=800&fit=crop",
-      photographer: "Unsplash"
-    },
-    {
-      id: "9",
-      title: "Taman Nasional Gunung Rinjani",
-      location: "Lombok",
-      category: "Alam",
-      imageUrl: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&h=600&fit=crop",
-      photographer: "Unsplash"
+      title: "Bantuan Pendidikan",
+      location: "",
+      category: "Bantuan",
+      imageUrl: "/gallery/gallery (5).jpeg",
+      photographer: "Gallery"
     }
   ];
 
@@ -99,14 +91,11 @@ const Gallery = () => {
       : ntbImages.filter(image => image.category === selectedCategory);
   }, [selectedCategory, ntbImages]);
 
-  // Handler untuk melihat gambar detail
-  const handleViewImage = (image: { imageUrl: string }) => {
-    window.open(image.imageUrl, '_blank', 'noopener,noreferrer');
-  };
 
   // Handler untuk tombol Lihat Galeri Lainnya
   const handleViewAllGallery = () => {
-    window.open('https://unsplash.com/s/photos/lombok-indonesia', '_blank', 'noopener,noreferrer');
+    // Bisa diarahkan ke halaman gallery khusus atau modal
+    console.log('View all gallery clicked');
   };
 
 
@@ -121,10 +110,10 @@ const Gallery = () => {
             Gallery
           </div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-secondary mb-3 sm:mb-4 leading-tight">
-            Gallery
+            Gallery Kegiatan
           </h2>
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-0">
-            Jelajahi keindahan Nusa Tenggara Barat dalam galeri foto masonry
+            Dokumentasi kegiatan dan aktivitas Haerul Hadi dalam melayani masyarakat
           </p>
         </div>
 
@@ -192,24 +181,6 @@ const Gallery = () => {
                     loading="lazy"
                   />
                   
-                  {/* Overlay with Button */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500">
-                    <div className="absolute bottom-4 left-0 right-0 p-3 sm:p-4 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                      <button 
-                        onClick={() => handleViewImage(image)}
-                        className="group/btn relative w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-semibold py-2 sm:py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 overflow-hidden"
-                      >
-                        {/* Background Animation */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700"></div>
-                        
-                        {/* Content */}
-                        <div className="relative flex items-center justify-center gap-2">
-                          <Eye className="w-4 h-4 transition-transform duration-300 group-hover/btn:scale-110" />
-                          <span className="text-sm">Lihat Detail</span>
-                        </div>
-                      </button>
-                    </div>
-                  </div>
 
                   {/* Category Badge */}
                   <div className="absolute top-3 sm:top-4 left-3 sm:left-4">
@@ -218,13 +189,6 @@ const Gallery = () => {
                     </span>
                   </div>
 
-                  {/* Location Badge */}
-                  <div className="absolute top-3 sm:top-4 right-3 sm:right-4">
-                    <span className="inline-block px-2 sm:px-3 py-1 text-xs font-semibold text-white bg-secondary/90 backdrop-blur-sm rounded-full flex items-center gap-1">
-                      <MapPin className="w-3 h-3" />
-                      {image.location}
-                    </span>
-                  </div>
                 </div>
 
                 {/* Image Info */}
@@ -232,14 +196,9 @@ const Gallery = () => {
                   <h3 className="text-white font-semibold text-sm sm:text-base line-clamp-1 mb-1">
                     {image.title}
                   </h3>
-                  <div className="flex items-center justify-between">
-                    <p className="text-white/80 text-xs line-clamp-1 flex-1 mr-2">
-                      {image.location}
-                    </p>
-                    <p className="text-white/80 text-xs flex-shrink-0">
-                      {image.photographer}
-                    </p>
-                  </div>
+                  <p className="text-white/80 text-xs">
+                    {image.photographer}
+                  </p>
                 </div>
               </div>
             ))}
@@ -252,7 +211,7 @@ const Gallery = () => {
             onClick={handleViewAllGallery}
             className="inline-flex items-center gap-1 sm:gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-full font-semibold hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
           >
-            <span className="text-sm sm:text-base">Lihat Galeri Lainnya</span>
+            <span className="text-sm sm:text-base">Lihat Semua Foto</span>
             <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
         </div>
