@@ -6,7 +6,7 @@ import "./Hero.css";
 
 const Hero = () => {
   return (
-    <section id="home" className="pt-4 lg:pt-8 lg:mt-0 pb-56 sm:pb-48 lg:pb-24 bg-gradient-to-br from-blue-600 to-blue-800 relative overflow-hidden">
+    <section id="home" className="pt-4 lg:pt-8 lg:mt-0 pb-56 sm:pb-48 lg:pb-24 min-h-[85vh] sm:min-h-[75vh] lg:min-h-auto bg-gradient-to-br from-blue-600 to-blue-800 relative overflow-hidden">
       {/* Grid lines background */}
       <div className="grid-background" />
       
@@ -16,15 +16,15 @@ const Hero = () => {
           <div className="lg:col-span-2 space-y-8 mt-8 sm:mt-12 lg:mt-20">
             <div className="space-y-4">
               <div className="space-y-2">
-                <div className="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-md border-2 border-white text-white text-sm lg:text-base font-medium rounded-full shadow-lg">
+                <div className="inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 bg-white/20 backdrop-blur-md border-2 border-white text-white text-xs sm:text-sm lg:text-base font-medium rounded-full shadow-lg">
                   Official Website
                 </div>
-                <h1 className="text-4xl lg:text-7xl font-bold text-white leading-none lg:leading-tight">
+                <h1 className="text-5xl sm:text-4xl lg:text-7xl font-bold text-white leading-none lg:leading-tight">
                   <span className="text-white">
                     Haerul Hadi
                   </span>
                   <br />
-                  <span className="text-4xl lg:text-7xl font-bold text-white">
+                  <span className="text-5xl sm:text-4xl lg:text-7xl font-bold text-white">
                     <span className="text-white">
                       S.Pd., M.H.
                     </span>

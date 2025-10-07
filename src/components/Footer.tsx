@@ -5,13 +5,13 @@ const Footer = () => {
 
   const handleWhatsAppClick = () => {
     const phoneNumber = "6285242766676";
-    const message = "Halo! Saya tertarik bergabung dengan Haerul Hadi. Bisa info lebih lanjut?";
+    const message = "Halo! Saya ingin menyampaikan aspirasi kepada Bapak Haerul Hadi. Bisa info lebih lanjut?";
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
 
   const handleEmailClick = () => {
-    window.location.href = "mailto:info@komunitaspemudantb.org";
+    window.location.href = "mailto:info@haerulhadi.com";
   };
 
   const handlePhoneClick = () => {
@@ -37,7 +37,7 @@ const Footer = () => {
               />
             </div>
             <p className="text-white/80 leading-relaxed">
-              Wadah pemuda daerah yang berkarakter, berdaya saing, dan berkontribusi aktif dalam menjaga warisan budaya serta membangun masa depan yang lebih baik.
+              Anggota DPR RI Komisi IX - Fraksi Partai NasDem yang berkomitmen melayani masyarakat dan menyerap aspirasi untuk kemajuan daerah.
             </p>
             <div className="flex space-x-4">
               <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-primary transition-smooth">
@@ -49,6 +49,9 @@ const Footer = () => {
               <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-primary transition-smooth">
                 <Twitter className="w-5 h-5" />
               </a>
+              <a href="/aspirasi" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-primary transition-smooth">
+                <Users className="w-5 h-5" />
+              </a>
             </div>
           </div>
 
@@ -57,28 +60,33 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4">Navigasi</h3>
             <ul className="space-y-3">
               <li>
-                <a href="#home" className="text-white/80 hover:text-primary transition-smooth">
-                  Beranda
+                <a href="/" className="text-white/80 hover:text-primary transition-smooth">
+                  Home
                 </a>
               </li>
               <li>
-                <a href="#visi-misi" className="text-white/80 hover:text-primary transition-smooth">
-                  Visi & Misi
+                <a href="/profil" className="text-white/80 hover:text-primary transition-smooth">
+                  Profil
                 </a>
               </li>
               <li>
-                <a href="#gallery" className="text-white/80 hover:text-primary transition-smooth">
-                  Galeri NTB
+                <a href="/kalender" className="text-white/80 hover:text-primary transition-smooth">
+                  Kalender Kegiatan
                 </a>
               </li>
               <li>
-                <a href="#program" className="text-white/80 hover:text-primary transition-smooth">
-                  Program
+                <a href="/portfolio" className="text-white/80 hover:text-primary transition-smooth">
+                  Galeri
                 </a>
               </li>
               <li>
-                <a href="#blog" className="text-white/80 hover:text-primary transition-smooth">
-                  Artikel
+                <a href="/blog" className="text-white/80 hover:text-primary transition-smooth">
+                  Berita
+                </a>
+              </li>
+              <li>
+                <a href="/contact" className="text-white/80 hover:text-primary transition-smooth">
+                  Kontak
                 </a>
               </li>
             </ul>
@@ -86,22 +94,32 @@ const Footer = () => {
 
           {/* Program */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Program Kami</h3>
+            <h3 className="text-lg font-semibold mb-4">Program & Layanan</h3>
             <ul className="space-y-3">
               <li>
-                <span className="text-white/80">Pelatihan & Workshop</span>
+                <a href="/aspirasi" className="text-white/80 hover:text-primary transition-smooth">
+                  Layanan Aspirasi
+                </a>
               </li>
               <li>
-                <span className="text-white/80">Diskusi Budaya</span>
+                <a href="/kalender" className="text-white/80 hover:text-primary transition-smooth">
+                  Kalender Kegiatan
+                </a>
               </li>
               <li>
-                <span className="text-white/80">Inovasi Pemuda</span>
+                <a href="/profil" className="text-white/80 hover:text-primary transition-smooth">
+                  Profil & Visi Misi
+                </a>
               </li>
               <li>
-                <span className="text-white/80">Kegiatan Sosial</span>
+                <a href="/portfolio" className="text-white/80 hover:text-primary transition-smooth">
+                  Dokumentasi Kegiatan
+                </a>
               </li>
               <li>
-                <span className="text-white/80">Kompetisi & Event</span>
+                <a href="/blog" className="text-white/80 hover:text-primary transition-smooth">
+                  Berita & Informasi
+                </a>
               </li>
             </ul>
           </div>
@@ -121,17 +139,17 @@ const Footer = () => {
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-primary flex-shrink-0" />
-                <button 
-                  onClick={handleEmailClick}
-                  className="text-white/80 hover:text-primary transition-colors"
-                >
-                  info@komunitaspemudantb.org
-                </button>
+                        <button 
+                          onClick={handleEmailClick}
+                          className="text-white/80 hover:text-primary transition-colors"
+                        >
+                          info@haerulhadi.com
+                        </button>
               </div>
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
                 <span className="text-white/80">
-                  Mataram, Nusa Tenggara Barat<br />
+                  Jakarta, DKI Jakarta<br />
                   Indonesia
                 </span>
               </div>
