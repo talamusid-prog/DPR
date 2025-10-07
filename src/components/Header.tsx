@@ -117,7 +117,7 @@ const Header = ({ onLogoClick }: HeaderProps) => {
               }`}
               onClick={handleRegisterClick}
             >
-              Daftar
+              Daftar Relawan
             </Button>
           </div>
 
