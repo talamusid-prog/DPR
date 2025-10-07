@@ -10,8 +10,8 @@ const Registration = () => {
   return (
     <div className="min-h-screen">
       <Helmet>
-        <title>Pendaftaran Anggota IKKBG - Ikatan Keluarga Besar Gorontalo</title>
-        <meta name="description" content="Formulir pendaftaran anggota Ikatan Keluarga Besar Gorontalo (IKKBG) Pasangkayu" />
+        <title>Formulir Pendaftaran Relawan bAGUS</title>
+        <meta name="description" content="Formulir di bawah ini untuk mendaftar sebagai anggota Relawan baGUS" />
       </Helmet>
       
       <Header />
