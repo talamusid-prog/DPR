@@ -32,7 +32,7 @@ const Footer = () => {
             <div className="flex items-center space-x-2">
               <img 
                 src="/logo.png" 
-                alt="Dr. Dr. Ir. H. AGUS AMBO DJIWA, M.P.
+                alt="Dr. Ir. H. AGUS AMBO DJIWA, M.P.
  Logo" 
                 className="w-20 h-20 object-contain brightness-0 invert"
               />
@@ -162,7 +162,7 @@ const Footer = () => {
         <div className="border-t border-white/20 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-white/60 text-sm">
-              &copy; {currentYear} Dr. Dr. Ir. H. AGUS AMBO DJIWA, M.P.
+              &copy; {currentYear} Dr. Ir. H. AGUS AMBO DJIWA, M.P.
 . All rights reserved.
             </p>
             <div className="flex gap-6 text-sm">

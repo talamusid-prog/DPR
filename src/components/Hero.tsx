@@ -21,7 +21,7 @@ const Hero = () => {
                 </div>
                 <h1 className="text-5xl sm:text-4xl lg:text-7xl font-bold text-white leading-none lg:leading-tight">
                   <span className="text-white">
-                    Dr. Dr. Ir. H. AGUS AMBO DJIWA, M.P.
+                    Dr. Ir. H. AGUS AMBO DJIWA, M.P.
 
                   </span>
                   <br />

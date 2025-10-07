@@ -105,7 +105,7 @@ const Gallery = () => {
             Gallery Kegiatan
           </h2>
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-0">
-            Dokumentasi kegiatan dan aktivitas Dr. Dr. Ir. H. AGUS AMBO DJIWA, M.P.
+            Dokumentasi kegiatan dan aktivitas Dr. Ir. H. AGUS AMBO DJIWA, M.P.
  dalam melayani masyarakat
           </p>
         </div>

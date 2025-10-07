@@ -39,7 +39,7 @@ const ProfilPage = () => {
                   <div className="w-48 h-48 mx-auto mb-8 rounded-full overflow-hidden border-4 border-primary/30 shadow-lg">
                     <img 
                       src="/profile.png" 
-                      alt="Dr. Dr. Ir. H. AGUS AMBO DJIWA, M.P.
+                      alt="Dr. Ir. H. AGUS AMBO DJIWA, M.P.
 , " 
                       className="w-full h-full object-cover"
                     />

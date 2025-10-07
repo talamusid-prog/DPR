@@ -202,7 +202,7 @@ const KalenderKegiatan = () => {
             <span className="gradient-primary bg-clip-text text-transparent">Jadwal Kegiatan</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Ikuti jadwal kegiatan dan agenda Bapak Dr. Dr. Ir. H. AGUS AMBO DJIWA, M.P.
+            Ikuti jadwal kegiatan dan agenda Bapak Dr. Ir. H. AGUS AMBO DJIWA, M.P.
 , 
           </p>
         </div>
