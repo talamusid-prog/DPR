@@ -114,14 +114,14 @@ const Portfolio = () => {
       <Helmet>
         {/* Basic Meta Tags */}
         <title>Galeri Dr. Ir. H. AGUS AMBO DJIWA, M.P.
- | Menjaga Warisan, Membangun Masa Depan</title>
+ | Anggota DPR-RI periode 2024-2029</title>
         <meta name="description" content="Jelajahi galeri foto komunitas pemuda Nusa Tenggara Barat. Lihat keindahan alam, budaya, dan kegiatan komunitas dalam koleksi foto gallery kami." />
         <meta name="keywords" content="galeri, foto, Dr. Ir. H. AGUS AMBO DJIWA, M.P.
 , Nusa Tenggara Barat, budaya, alam, pantai, Lombok, galeri masonry" />
         
         {/* Open Graph Meta Tags */}
         <meta property="og:title" content="Galeri Dr. Ir. H. AGUS AMBO DJIWA, M.P.
- | Menjaga Warisan, Membangun Masa Depan" />
+ | Anggota DPR-RI periode 2024-2029" />
         <meta property="og:description" content="Jelajahi galeri foto komunitas pemuda Nusa Tenggara Barat. Lihat keindahan alam, budaya, dan kegiatan komunitas dalam koleksi foto gallery kami." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://komunitaspemudantb.org/portfolio" />
@@ -141,7 +141,7 @@ const Portfolio = () => {
         {/* Twitter Card Meta Tags */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Galeri Dr. Ir. H. AGUS AMBO DJIWA, M.P.
- | Menjaga Warisan, Membangun Masa Depan" />
+ | Anggota DPR-RI periode 2024-2029" />
         <meta name="twitter:description" content="Jelajahi galeri foto komunitas pemuda Nusa Tenggara Barat. Lihat keindahan alam, budaya, dan kegiatan komunitas dalam koleksi foto gallery kami." />
         <meta name="twitter:image" content="https://komunitaspemudantb.org/logo.png" />
         <meta name="twitter:site" content="@komunitaspemudantb" />
