@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Filter, Search, MapPin, User, Calendar, ArrowLeft, Grid, List } from "lucide-react";
+import { Filter, Search, MapPin, User, Calendar, Grid, List } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { getPortfolioImageWithFallback } from "../lib/portfolioImageService";
 import type { Gallery } from "../lib/supabase";
@@ -127,19 +127,9 @@ const Dokumentasi = () => {
         <div className="bg-white shadow-sm border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => navigate('/')}
-                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  <span>Kembali ke Beranda</span>
-                </button>
-                <div className="h-6 w-px bg-border" />
-                <div>
-                  <h1 className="text-2xl font-bold text-foreground">Dokumentasi Kegiatan</h1>
-                  <p className="text-muted-foreground">Dokumentasi lengkap kegiatan Dr. Ir. H. AGUS AMBO DJIWA, M.P.</p>
-                </div>
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">Dokumentasi Kegiatan</h1>
+                <p className="text-muted-foreground">Dokumentasi lengkap kegiatan Dr. Ir. H. AGUS AMBO DJIWA, M.P.</p>
               </div>
               
               {/* View Mode Toggle */}
