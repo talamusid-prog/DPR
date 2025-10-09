@@ -1,4 +1,5 @@
 import { supabase, Gallery, CreateGallery } from './supabase'
+import { uploadImage, getOptimizedImageUrl, UploadResult } from './imageUploadService'
 
 // Service untuk mengelola gallery foto
 export const getAllGalleries = async (): Promise<Gallery[]> => {
@@ -175,7 +176,51 @@ export const validateImageFile = (file: File): { valid: boolean; error?: string 
   return { valid: true }
 }
 
-// Fungsi untuk convert file ke base64
+// Fungsi untuk upload gambar gallery ke Supabase Storage
+export const uploadGalleryImage = async (file: File): Promise<UploadResult> => {
+  try {
+    console.log('📤 Uploading gallery image:', {
+      name: file.name,
+      size: file.size,
+      type: file.type
+    })
+
+    const result = await uploadImage(file, {
+      bucket: 'gallery-images',
+      folder: 'gallery',
+      maxSize: 10 * 1024 * 1024, // 10MB
+      allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+    })
+
+    if (result.success && result.url) {
+      console.log('✅ Gallery image uploaded successfully:', result.url)
+    } else {
+      console.error('❌ Gallery image upload failed:', result.error)
+    }
+
+    return result
+  } catch (error) {
+    console.error('❌ Upload gallery image error:', error)
+    return {
+      success: false,
+      error: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+    }
+  }
+}
+
+// Fungsi untuk mendapatkan URL gambar gallery yang dioptimasi
+export const getGalleryImageUrl = (imagePath: string, options?: {
+  width?: number
+  height?: number
+  quality?: number
+}): string => {
+  return getOptimizedImageUrl(imagePath, {
+    ...options,
+    format: 'webp'
+  })
+}
+
+// Fungsi untuk convert file ke base64 (deprecated - gunakan uploadGalleryImage)
 export const fileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()

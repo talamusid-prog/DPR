@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Filter, Search, MapPin, User, Calendar, Grid, List } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { getPortfolioImageWithFallback } from "../lib/portfolioImageService";
+import { getGalleryImageUrl } from "../lib/galleryService";
 import type { Gallery } from "../lib/supabase";
 import { Helmet } from "react-helmet-async";
 import { getCurrentDomain } from "../lib/urlUtils";
@@ -293,7 +294,7 @@ const Dokumentasi = () => {
                       {/* Grid View */}
                       <div className="relative aspect-square overflow-hidden">
                         <img
-                          src={gallery.image_url}
+                          src={getGalleryImageUrl(gallery.image_url, { width: 400, height: 400, quality: 85 })}
                           alt={gallery.title}
                           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                           onError={(e) => {
@@ -341,7 +342,7 @@ const Dokumentasi = () => {
                       {/* List View */}
                       <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
                         <img
-                          src={gallery.image_url}
+                          src={getGalleryImageUrl(gallery.image_url, { width: 80, height: 80, quality: 80 })}
                           alt={gallery.title}
                           className="w-full h-full object-cover"
                           onError={(e) => {

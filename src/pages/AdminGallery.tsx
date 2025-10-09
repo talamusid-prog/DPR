@@ -28,6 +28,7 @@ import {
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import { supabase } from "@/lib/supabase";
 import { countNewAspirasi } from "@/lib/aspirasiService";
+import { uploadGalleryImage, getGalleryImageUrl } from "@/lib/galleryService";
 import { showSuccess, showError, showWarning, showConfirm } from "@/lib/sweetAlert";
 
 // Interface untuk Gallery
@@ -117,34 +118,47 @@ const AdminGallery = () => {
   // Fungsi untuk menyimpan gambar sebagai base64 (tidak digunakan lagi - langsung ke formData)
 
   // Fungsi untuk handle file selection
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      // Validasi file type
-      if (!file.type.startsWith('image/')) {
-        showWarning('Pilih file gambar yang valid!');
-        return;
-      }
+    if (!file) return;
 
-      // Validasi file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        showWarning('Ukuran file maksimal 5MB!');
-        return;
-      }
+    // Validasi file type
+    if (!file.type.startsWith('image/')) {
+      showWarning('Pilih file gambar yang valid!');
+      return;
+    }
 
-      setSelectedFile(file);
+    // Validasi file size (max 10MB untuk gallery)
+    if (file.size > 10 * 1024 * 1024) {
+      showWarning('Ukuran file maksimal 10MB!');
+      return;
+    }
+
+    setSelectedFile(file);
+    setIsUploading(true);
+    
+    try {
+      console.log('📤 Uploading gallery image to Supabase Storage...');
       
-      // Convert to base64 dan simpan langsung ke formData (seperti blog)
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const base64Image = e.target?.result as string;
-        setImagePreview(base64Image);
+      // Upload ke Supabase Storage
+      const result = await uploadGalleryImage(file);
+      
+      if (result.success && result.url) {
+        setImagePreview(result.url);
         setFormData(prev => ({
           ...prev,
-          image_url: base64Image
+          image_url: result.url!
         }));
-      };
-      reader.readAsDataURL(file);
+        console.log('✅ Gallery image uploaded successfully:', result.url);
+      } else {
+        console.error('❌ Upload failed:', result.error);
+        showError(result.error || 'Gagal mengupload gambar');
+      }
+    } catch (error) {
+      console.error("❌ Error uploading file:", error);
+      showError(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -539,7 +553,7 @@ const AdminGallery = () => {
               <CardHeader className="pb-3 sm:pb-4">
                 <div className="aspect-square overflow-hidden rounded-lg mb-3 sm:mb-4 relative">
                   <img
-                    src={image.image_url}
+                    src={getGalleryImageUrl(image.image_url, { width: 400, height: 400, quality: 80 })}
                     alt={image.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
@@ -614,7 +628,7 @@ const AdminGallery = () => {
                 <div className="flex-shrink-0">
                   <div className="w-16 h-16 overflow-hidden rounded-lg relative">
                     <img
-                      src={image.image_url}
+                      src={getGalleryImageUrl(image.image_url, { width: 64, height: 64, quality: 80 })}
                       alt={image.title}
                       className="w-full h-full object-cover"
                     />
