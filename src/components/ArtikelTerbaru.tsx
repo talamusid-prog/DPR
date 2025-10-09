@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { getPublishedPosts } from "@/lib/blogService";
 import { BlogPost } from "@/lib/supabase";
@@ -9,12 +9,8 @@ const ArtikelTerbaru = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load posts on component mount
-  useEffect(() => {
-    loadPosts();
-  }, []);
 
-  const loadPosts = async () => {
+  const loadPosts = useCallback(async () => {
     try {
       setLoading(true);
       const data = await getPublishedPosts();
@@ -24,48 +20,14 @@ const ArtikelTerbaru = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  // Dummy data untuk fallback
-  const dummyPosts = [
-    {
-      id: 1,
-      title: "Keberadaan KEK Sanur Harus Seiring dengan Identitas Sejarah dan Budaya Bali",
-      excerpt: "Pembangunan Kawasan Ekonomi Khusus (KEK) Sanur harus memperhatikan aspek sejarah dan budaya Bali yang kental.",
-      created_at: "2025-10-06",
-      slug: "keberadaan-kek-sanur"
-    },
-    {
-      id: 2,
-      title: "TNI tidak boleh Terjebak Struktur Usang",
-      excerpt: "TNI harus terus beradaptasi dengan perkembangan zaman dan teknologi modern.",
-      created_at: "2025-10-06",
-      slug: "tni-tidak-boleh-terjebak-struktur"
-    },
-    {
-      id: 3,
-      title: "Legislator NasDem: Pelayanan Harus Relevan",
-      excerpt: "Pelayanan Harus Relevan dengan kebutuhan masyarakat dan terus ditingkatkan kualitasnya.",
-      created_at: "2025-10-06",
-      slug: "legislator-nasdem-pelayanan-harus-relevan"
-    },
-    {
-      id: 4,
-      title: "Muslim Ayub Minta Usut Tuntas Dugaan Pelanggaran HAM",
-      excerpt: "Usut Tuntas Dugaan Pelanggaran HAM di berbagai daerah untuk menegakkan keadilan.",
-      created_at: "2025-10-06",
-      slug: "muslim-ayub-minta-usut-tuntas"
-    },
-    {
-      id: 5,
-      title: "Legislator NasDem Perkuat Pelaku Ekonomi Kreatif",
-      excerpt: "Perkuat Pelaku Ekonomi Kreatif untuk mendorong pertumbuhan ekonomi daerah.",
-      created_at: "2025-10-06",
-      slug: "legislator-nasdem-perkuat-pelaku-ekonomi-kreatif"
-    }
-  ];
+  // Load posts on component mount
+  useEffect(() => {
+    loadPosts();
+  }, [loadPosts]);
 
-  const displayPosts = posts.length > 0 ? posts : dummyPosts;
+  const displayPosts = posts;
   
   // Transform posts data to artikel format
   const artikelData = displayPosts.slice(0, 5).map((post, index) => ({
