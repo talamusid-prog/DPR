@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { retryWithBackoff, fallbackData } from './errorHandler';
 
 export type AspirasiStatus = 'baru' | 'diproses' | 'selesai';
 
@@ -59,15 +60,24 @@ export async function deleteAspirasi(id: string): Promise<boolean> {
 }
 
 export async function countNewAspirasi(): Promise<number> {
-  const { count, error } = await supabase
-    .from('aspirations')
-    .select('*', { count: 'exact', head: true })
-    .eq('status', 'baru');
-  if (error) {
-    console.error('❌ countNewAspirasi error:', error);
-    return 0;
+  try {
+    return await retryWithBackoff(async () => {
+      const { count, error } = await supabase
+        .from('aspirations')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'baru');
+      
+      if (error) {
+        console.error('❌ countNewAspirasi error:', error);
+        throw error;
+      }
+      
+      return count ?? 0;
+    });
+  } catch (error) {
+    console.error('❌ countNewAspirasi final error:', error);
+    return fallbackData.newAspirasiCount;
   }
-  return count ?? 0;
 }
 
 
