@@ -164,9 +164,9 @@ const ArtikelTerbaru = () => {
                   }`}
                 >
                   <div 
-                    className="bg-white rounded-lg border border-red-600 transition-all duration-300 p-3 sm:p-4 flex h-28 sm:h-32 cursor-pointer hover:shadow-lg hover:scale-105 group" 
+                    className="bg-white rounded-lg border transition-all duration-300 p-3 sm:p-4 flex h-28 sm:h-32 cursor-pointer hover:shadow-lg hover:scale-105 group" 
                             style={{
-                              background: 'linear-gradient(white, white) padding-box, linear-gradient(135deg, #dc2626, #ef4444) border-box',
+                              background: 'linear-gradient(white, white) padding-box, linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8)) border-box',
                               border: '1px solid transparent'
                             }}
                     onClick={() => navigate(`/blog/${artikel.slug}`)}
@@ -175,7 +175,7 @@ const ArtikelTerbaru = () => {
                     <div className="flex-shrink-0 mr-2 sm:mr-3">
                       <div className="text-3xl sm:text-4xl font-bold italic text-transparent" 
                            style={{ 
-                             WebkitTextStroke: '2px #dc2626',
+                             WebkitTextStroke: '2px hsl(var(--primary))',
                              color: 'transparent'
                            }}>
                         {artikel.number}
@@ -190,12 +190,12 @@ const ArtikelTerbaru = () => {
                       </div>
                       
                       {/* Title */}
-                              <h3 className="text-xs sm:text-sm font-bold text-red-900 mb-1 sm:mb-2 line-clamp-2 group-hover:text-red-600 transition-colors">
+                              <h3 className="text-xs sm:text-sm font-bold text-primary mb-1 sm:mb-2 line-clamp-2 group-hover:text-primary/80 transition-colors">
                         {artikel.title}
                       </h3>
                       
                       {/* Description */}
-                      <p className="text-xs text-red-700 line-clamp-2 group-hover:text-red-800 transition-colors">
+                      <p className="text-xs text-primary/70 line-clamp-2 group-hover:text-primary/90 transition-colors">
                         {artikel.description}
                       </p>
                     </div>

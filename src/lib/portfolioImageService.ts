@@ -50,9 +50,10 @@ export const savePortfolioImageToPublic = async (file: File): Promise<string | n
     const randomId = Math.random().toString(36).substring(2, 11);
     const imageKey = `portfolio-image-${timestamp}-${randomId}`;
     
-    // Save to localStorage dan sessionStorage untuk backup
+    // Save to localStorage dan sessionStorage untuk backup (dengan enkripsi)
     try {
-      localStorage.setItem(imageKey, base64);
+      const { setEncryptedItem } = await import('./encryption');
+      setEncryptedItem(imageKey, base64);
       sessionStorage.setItem(imageKey, base64);
     } catch (storageError) {
       console.error('❌ [IMAGE SERVICE] Storage backup failed:', storageError);
@@ -124,7 +125,7 @@ export const savePortfolioImage = async (file: File): Promise<string | null> => 
 };
 
 // Fungsi untuk mengambil gambar dari storage
-export const getPortfolioImage = (imageKey: string): string | null => {
+export const getPortfolioImage = async (imageKey: string): Promise<string | null> => {
   try {
     // Check if it's already a base64 data URL (seperti blog)
     if (imageKey.startsWith('data:image/')) {
@@ -138,8 +139,9 @@ export const getPortfolioImage = (imageKey: string): string | null => {
     
     // Check if it's a portfolio-image key (legacy)
     if (imageKey.startsWith('portfolio-image-')) {
-      // Try localStorage first
-      let image = localStorage.getItem(imageKey);
+      // Try localStorage first (dengan dekripsi)
+      const { getEncryptedItem } = await import('./encryption');
+      let image = getEncryptedItem(imageKey);
       
       if (image) {
         // Check if it's a real image (base64) or placeholder
@@ -654,9 +656,9 @@ export const getPlaceholderImageByTitle = (title: string): string => {
 };
 
 // Fungsi untuk mendapatkan gambar dengan fallback yang lebih robust
-export const getPortfolioImageWithFallback = (imageKey: string, category: string = 'default', title: string = ''): string => {
+export const getPortfolioImageWithFallback = async (imageKey: string, category: string = 'default', title: string = ''): Promise<string> => {
   // Try to get from storage first
-  const storedImage = getPortfolioImage(imageKey);
+  const storedImage = await getPortfolioImage(imageKey);
   if (storedImage) {
     return storedImage;
   }

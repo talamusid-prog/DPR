@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { Portfolio } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,18 +26,71 @@ import {
 } from "lucide-react";
 import { getAllPortfolios, createPortfolioWithSlug, updatePortfolioBySlug, deletePortfolio } from "@/lib/portfolioService";
 import { savePortfolioImage, getPortfolioImage, savePortfolioImageToPublic } from "@/lib/portfolioImageService";
-import { Portfolio, CreatePortfolio } from "@/lib/supabase";
+import { Gallery, CreateGallery } from "@/lib/supabase";
+import { 
+  getAllGalleries, 
+  createGallery, 
+  updateGallery, 
+  deleteGallery,
+  getGalleryCategories,
+  generateSlug,
+  validateImageFile,
+  fileToBase64
+} from "@/lib/galleryService";
 import { supabase } from "@/lib/supabase";
 import { showSuccess, showError, showWarning, showConfirm } from "@/lib/sweetAlert";
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
+// Component untuk menangani async image loading
+const PortfolioImage = ({ gallery, getImageFromLocal }: { 
+  gallery: Gallery; 
+  getImageFromLocal: (imageKey: string) => Promise<string | null>;
+}) => {
+  const [imageSrc, setImageSrc] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadImage = async () => {
+      if (gallery.image_url) {
+        if (gallery.image_url.startsWith('data:image/')) {
+          setImageSrc(gallery.image_url);
+        } else if (gallery.image_url.startsWith('portfolio-image-')) {
+          const localImage = await getImageFromLocal(gallery.image_url);
+          setImageSrc(localImage || '');
+        } else {
+          setImageSrc(gallery.image_url);
+        }
+      }
+      setLoading(false);
+    };
+
+    loadImage();
+  }, [gallery.image_url, getImageFromLocal]);
+
+  if (loading) {
+    return (
+      <div className="w-full h-full bg-gray-200 animate-pulse flex items-center justify-center">
+        <div className="text-gray-500">Loading...</div>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={imageSrc}
+      alt={gallery.title}
+      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+    />
+  );
+};
+
 const AdminPortfolio = () => {
   const navigate = useNavigate();
-  const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
+  const [galleries, setGalleries] = useState<Gallery[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingPortfolio, setEditingPortfolio] = useState<Portfolio | null>(null);
+  const [editingGallery, setEditingGallery] = useState<Gallery | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -45,22 +99,39 @@ const AdminPortfolio = () => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    client: "",
+    location: "",
     category: "",
-    technologies: [] as string[],
-    project_url: "",
-    github_url: "",
-    featured_image: "",
+    photographer: "",
+    image_url: "",
     status: "draft" as "draft" | "published",
     featured: false
   });
 
-  const [technologyInput, setTechnologyInput] = useState("");
+  const [categories, setCategories] = useState<string[]>([]);
 
-  useEffect(() => {
-    loadPortfolios();
-    // Cleanup unused local images on component mount
-    cleanupUnusedLocalImages();
+
+  // Load galleries
+  const loadGalleries = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await getAllGalleries();
+      setGalleries(data);
+    } catch (error) {
+      console.error('Error loading galleries:', error);
+      showError('Gagal memuat gallery');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Load categories
+  const loadCategories = useCallback(async () => {
+    try {
+      const data = await getGalleryCategories();
+      setCategories(data);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    }
   }, []);
 
   // Fungsi untuk menyimpan gambar menggunakan service baru
@@ -71,14 +142,14 @@ const AdminPortfolio = () => {
   };
 
   // Fungsi untuk mengambil gambar dari storage
-  const getImageFromLocal = (imageKey: string): string | null => {
+  const getImageFromLocal = async (imageKey: string): Promise<string | null> => {
     try {
       // Check if it's already a base64 data URL (seperti blog)
       if (imageKey.startsWith('data:image/')) {
         return imageKey;
       }
       
-      const image = getPortfolioImage(imageKey);
+      const image = await getPortfolioImage(imageKey);
       return image;
     } catch (error) {
       console.error('❌ Error getting image from storage:', error);
@@ -90,15 +161,10 @@ const AdminPortfolio = () => {
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Validasi file type
-      if (!file.type.startsWith('image/')) {
-        showWarning('Pilih file gambar yang valid!');
-        return;
-      }
-
-      // Validasi file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        showWarning('Ukuran file maksimal 5MB!');
+      // Validasi file menggunakan service
+      const validation = validateImageFile(file);
+      if (!validation.valid) {
+        showError(validation.error || 'File tidak valid');
         return;
       }
 
@@ -149,7 +215,7 @@ const AdminPortfolio = () => {
     try {
       setLoading(true);
       const data = await getAllPortfolios();
-      setPortfolios(data);
+      setGalleries(data);
       // Cleanup unused local images after loading portfolios
       setTimeout(() => cleanupUnusedLocalImages(), 100);
     } catch (error) {
@@ -170,7 +236,7 @@ const AdminPortfolio = () => {
     try {
       setIsUploading(true);
       
-      let imageUrl = formData.featured_image;
+      let imageUrl = formData.image_url;
       
       // Save image to local storage if file is selected
       if (selectedFile) {
@@ -185,75 +251,74 @@ const AdminPortfolio = () => {
         }
       }
       
-      const portfolioData: Omit<CreatePortfolio, 'slug'> = {
+      const galleryData: CreateGallery = {
         title: formData.title.trim(),
         description: formData.description.trim(),
-        client: formData.client.trim(),
-        category: formData.category.trim(),
-        technologies: formData.technologies,
-        project_url: formData.project_url.trim() || undefined,
-        github_url: formData.github_url.trim() || undefined,
-        featured_image: imageUrl || undefined,
+        location: formData.location.trim(),
+        category: formData.category.trim() as 'Rapat DPR' | 'Reses Anggota DPR' | 'Kunjungan Kerja' | 'Penyerahan Bantuan' | 'Sosialisasi Program' | 'Konsultasi Publik' | 'Kegiatan Komisi' | 'Sidang Paripurna' | 'Hearing Publik' | 'Lainnya',
+        photographer: formData.photographer.trim(),
+        image_url: imageUrl || '',
+        slug: generateSlug(formData.title.trim()),
         status: formData.status,
         featured: formData.featured
       };
 
       let success = false;
       
-      if (editingPortfolio) {
-        // Update existing portfolio
-        success = await updatePortfolioBySlug(editingPortfolio.slug, portfolioData);
-        if (success) {
-          showSuccess("Portofolio berhasil diperbarui!");
+      if (editingGallery) {
+        // Update existing gallery
+        const result = await updateGallery(editingGallery.id, galleryData);
+        if (result) {
+          showSuccess("Dokumentasi berhasil diperbarui!");
+          success = true;
         }
       } else {
-        // Create new portfolio
-        success = await createPortfolioWithSlug(portfolioData);
-        if (success) {
-          showSuccess("Portofolio berhasil dibuat!");
+        // Create new gallery
+        const result = await createGallery(galleryData);
+        if (result) {
+          showSuccess("Dokumentasi berhasil dibuat!");
+          success = true;
         }
       }
 
       if (success) {
         setIsModalOpen(false);
         resetForm();
-        loadPortfolios();
+        loadGalleries();
       } else {
-        console.error('❌ Failed to save portfolio');
-        showError("Gagal menyimpan portofolio. Silakan coba lagi.");
+        console.error('❌ Failed to save gallery');
+        showError("Gagal menyimpan dokumentasi. Silakan coba lagi.");
       }
     } catch (error) {
-      console.error("Error saving portfolio:", error);
-      showError("Terjadi kesalahan saat menyimpan portofolio.");
+      console.error("Error saving gallery:", error);
+      showError("Terjadi kesalahan saat menyimpan dokumentasi.");
     } finally {
       setIsUploading(false);
     }
   };
 
-  const handleEdit = (portfolio: Portfolio) => {
-    setEditingPortfolio(portfolio);
+  const handleEdit = async (gallery: Gallery) => {
+    setEditingGallery(gallery);
     setFormData({
-      title: portfolio.title,
-      description: portfolio.description,
-      client: portfolio.client,
-      category: portfolio.category,
-      technologies: portfolio.technologies,
-      project_url: portfolio.project_url || "",
-      github_url: portfolio.github_url || "",
-      featured_image: portfolio.featured_image || "",
-      status: portfolio.status,
-      featured: portfolio.featured
+      title: gallery.title,
+      description: gallery.description,
+      location: gallery.location,
+      category: gallery.category,
+      photographer: gallery.photographer,
+      image_url: gallery.image_url,
+      status: gallery.status,
+      featured: gallery.featured
     });
-    // Set image preview if portfolio has featured image
-    if (portfolio.featured_image) {
+    // Set image preview if gallery has image
+    if (gallery.image_url) {
       // Check if it's already a base64 data URL (seperti blog)
-      if (portfolio.featured_image.startsWith('data:image/')) {
-        setImagePreview(portfolio.featured_image);
-      } else if (portfolio.featured_image.startsWith('portfolio-image-')) {
-        const localImage = getImageFromLocal(portfolio.featured_image);
+      if (gallery.image_url.startsWith('data:image/')) {
+        setImagePreview(gallery.image_url);
+      } else if (gallery.image_url.startsWith('portfolio-image-')) {
+        const localImage = await getImageFromLocal(gallery.image_url);
         setImagePreview(localImage || "");
       } else {
-        setImagePreview(portfolio.featured_image);
+        setImagePreview(gallery.image_url);
       }
     } else {
       setImagePreview("");
@@ -263,26 +328,26 @@ const AdminPortfolio = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Apakah Anda yakin ingin menghapus portofolio ini?")) {
+    if (confirm("Apakah Anda yakin ingin menghapus dokumentasi ini?")) {
       try {
-        // Find portfolio to get featured_image
-        const portfolio = portfolios.find(p => p.id === id);
+        // Find gallery to get image_url
+        const gallery = galleries.find(g => g.id === id);
         
-        const success = await deletePortfolio(id);
+        const success = await deleteGallery(id);
         if (success) {
           // Clean up local storage if image was stored locally
-          if (portfolio?.featured_image?.startsWith('portfolio-image-')) {
-            localStorage.removeItem(portfolio.featured_image);
+          if (gallery?.image_url?.startsWith('portfolio-image-')) {
+            localStorage.removeItem(gallery.image_url);
           }
           
-          showSuccess("Portofolio berhasil dihapus!");
-          loadPortfolios();
+          showSuccess("Dokumentasi berhasil dihapus!");
+          loadGalleries();
         } else {
-          showError("Gagal menghapus portofolio.");
+          showError("Gagal menghapus dokumentasi.");
         }
       } catch (error) {
-        console.error("Error deleting portfolio:", error);
-        showError("Terjadi kesalahan saat menghapus portofolio.");
+        console.error("Error deleting gallery:", error);
+        showError("Terjadi kesalahan saat menghapus dokumentasi.");
       }
     }
   };
@@ -291,30 +356,27 @@ const AdminPortfolio = () => {
     setFormData({
       title: "",
       description: "",
-      client: "",
+      location: "",
       category: "",
-      technologies: [],
-      project_url: "",
-      github_url: "",
-      featured_image: "",
+      photographer: "",
+      image_url: "",
       status: "draft",
       featured: false
     });
-    setTechnologyInput("");
-    setEditingPortfolio(null);
+    setEditingGallery(null);
     setSelectedFile(null);
     setImagePreview("");
   };
 
   // Fungsi untuk membersihkan local storage yang tidak terpakai
-  const cleanupUnusedLocalImages = () => {
+  const cleanupUnusedLocalImages = useCallback(() => {
     try {
       const keys = Object.keys(localStorage);
       const imageKeys = keys.filter(key => key.startsWith('portfolio-image-'));
       
-      // Get all portfolio image keys from database
-      const portfolioImageKeys = portfolios
-        .map(p => p.featured_image)
+      // Get all gallery image keys from database
+      const portfolioImageKeys = galleries
+        .map(g => g.image_url)
         .filter(img => img?.startsWith('portfolio-image-'));
       
       // Remove unused image keys
@@ -326,22 +388,29 @@ const AdminPortfolio = () => {
     } catch (error) {
       console.error('Error cleaning up local storage:', error);
     }
-  };
+  }, [galleries]);
 
-  // Fungsi untuk export data portfolio dengan gambar
-  const exportPortfolioData = () => {
+  useEffect(() => {
+    loadGalleries();
+    loadCategories();
+    // Cleanup unused local images on component mount
+    cleanupUnusedLocalImages();
+  }, [cleanupUnusedLocalImages, loadGalleries, loadCategories]);
+
+  // Fungsi untuk export data gallery dengan gambar
+  const exportGalleryData = async () => {
     try {
-      const exportData = portfolios.map(portfolio => {
+      const exportData = await Promise.all(galleries.map(async (gallery) => {
         let imageData = null;
-        if (portfolio.featured_image?.startsWith('portfolio-image-')) {
-          imageData = getImageFromLocal(portfolio.featured_image);
+        if (gallery.image_url?.startsWith('portfolio-image-')) {
+          imageData = await getImageFromLocal(gallery.image_url);
         }
         
         return {
-          ...portfolio,
+          ...gallery,
           localImageData: imageData
         };
-      });
+      }));
       
       const dataStr = JSON.stringify(exportData, null, 2);
       const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -349,33 +418,17 @@ const AdminPortfolio = () => {
       
       const link = document.createElement('a');
       link.href = url;
-      link.download = `portfolio-data-${new Date().toISOString().split('T')[0]}.json`;
+      link.download = `dokumentasi-data-${new Date().toISOString().split('T')[0]}.json`;
       link.click();
       
       URL.revokeObjectURL(url);
-      showSuccess('Data portfolio berhasil di-export!');
+      showSuccess('Data dokumentasi berhasil di-export!');
     } catch (error) {
       console.error('Error exporting data:', error);
-      showError('Gagal export data portfolio.');
+      showError('Gagal export data dokumentasi.');
     }
   };
 
-  const addTechnology = () => {
-    if (technologyInput.trim() && !formData.technologies.includes(technologyInput.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        technologies: [...prev.technologies, technologyInput.trim()]
-      }));
-      setTechnologyInput("");
-    }
-  };
-
-  const removeTechnology = (tech: string) => {
-    setFormData(prev => ({
-      ...prev,
-      technologies: prev.technologies.filter(t => t !== tech)
-    }));
-  };
 
   const openModal = () => {
     resetForm();
@@ -429,51 +482,33 @@ const AdminPortfolio = () => {
               Kembali
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-secondary">Kelola Portofolio</h1>
-              <p className="text-muted-foreground">Kelola semua portofolio proyek</p>
+              <h1 className="text-3xl font-bold text-secondary">Kelola Dokumentasi</h1>
+              <p className="text-muted-foreground">Kelola dokumentasi kegiatan</p>
             </div>
           </div>
                      <div className="flex items-center gap-2">
-            <Button onClick={exportPortfolioData} variant="outline" className="flex items-center gap-2">
+            <Button onClick={exportGalleryData} variant="outline" className="flex items-center gap-2">
               <Download className="h-4 w-4" />
               Export Data
             </Button>
             <Button onClick={openModal} className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
-              Tambah Portofolio
+              Tambah Dokumentasi
             </Button>
           </div>
         </div>
 
-        {/* Portfolio Grid */}
+        {/* Gallery Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {portfolios.map((portfolio) => (
-              <Card key={portfolio.id} className="group hover:shadow-lg transition-all duration-300">
+          {galleries.map((gallery) => (
+              <Card key={gallery.id} className="group hover:shadow-lg transition-all duration-300">
                 <CardHeader className="pb-4">
-                  {portfolio.featured_image ? (
+                  {gallery.image_url ? (
                     <div className="aspect-[3/2] overflow-hidden rounded-lg mb-4">
-                                                                     {(() => {
-                          let imageSrc = '';
-                          
-                          if (portfolio.featured_image) {
-                            // Check if it's already a base64 data URL (seperti blog)
-                            if (portfolio.featured_image.startsWith('data:image/')) {
-                              imageSrc = portfolio.featured_image;
-                            } else if (portfolio.featured_image.startsWith('portfolio-image-')) {
-                              imageSrc = getImageFromLocal(portfolio.featured_image) || '';
-                            } else {
-                              imageSrc = portfolio.featured_image;
-                            }
-                          }
-                          
-                          return (
-                            <img
-                              src={imageSrc}
-                              alt={portfolio.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                          );
-                        })()}
+                                                                     <PortfolioImage 
+                          gallery={gallery}
+                          getImageFromLocal={getImageFromLocal}
+                        />
                     </div>
                   ) : (
                     <div className="aspect-[3/2] bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center rounded-lg mb-4">
@@ -485,17 +520,20 @@ const AdminPortfolio = () => {
                   <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <CardTitle className="text-lg font-bold text-secondary group-hover:text-primary transition-colors line-clamp-2">
-                      {portfolio.title}
+                      {gallery.title}
                     </CardTitle>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Client: {portfolio.client}
+                      Lokasi: {gallery.location}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Pencatat: {gallery.photographer}
                     </p>
                   </div>
                   <div className="flex items-center gap-1 ml-2">
-                    {portfolio.featured && (
+                    {gallery.featured && (
                       <Star className="h-4 w-4 text-yellow-500 fill-current" />
                     )}
-                    {portfolio.status === 'published' ? (
+                    {gallery.status === 'published' ? (
                       <Eye className="h-4 w-4 text-green-500" />
                     ) : (
                       <EyeOff className="h-4 w-4 text-gray-400" />
@@ -505,34 +543,24 @@ const AdminPortfolio = () => {
               </CardHeader>
               <CardContent className="pt-0">
                 <p className="text-muted-foreground text-sm line-clamp-3 mb-4">
-                  {stripHtmlTags(portfolio.description)}
+                  {stripHtmlTags(gallery.description)}
                 </p>
                 
                 <div className="flex flex-wrap gap-2 mb-4">
                   <Badge variant="secondary" className="text-xs">
-                    {portfolio.category}
+                    {gallery.category}
                   </Badge>
-                  {portfolio.technologies.slice(0, 3).map((tech, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
-                      {tech}
-                    </Badge>
-                  ))}
-                  {portfolio.technologies.length > 3 && (
-                    <Badge variant="outline" className="text-xs">
-                      +{portfolio.technologies.length - 3}
-                    </Badge>
-                  )}
                 </div>
 
                 <div className="flex items-center justify-between text-xs text-muted-foreground mb-4">
-                  <span>Dibuat: {formatDate(portfolio.created_at)}</span>
+                  <span>Dibuat: {formatDate(gallery.created_at)}</span>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleEdit(portfolio)}
+                    onClick={() => handleEdit(gallery)}
                     className="flex-1"
                   >
                     <Edit className="h-3 w-3 mr-1" />
@@ -541,7 +569,7 @@ const AdminPortfolio = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleDelete(portfolio.id)}
+                    onClick={() => handleDelete(gallery.id)}
                     className="text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
                     <Trash2 className="h-3 w-3" />
@@ -552,10 +580,10 @@ const AdminPortfolio = () => {
           ))}
         </div>
 
-        {portfolios.length === 0 && (
+        {galleries.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground text-lg">
-              Belum ada portofolio yang dibuat.
+              Belum ada dokumentasi yang dibuat.
             </p>
           </div>
         )}
@@ -567,7 +595,7 @@ const AdminPortfolio = () => {
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-secondary">
-                    {editingPortfolio ? "Edit Portofolio" : "Tambah Portofolio"}
+                    {editingGallery ? "Edit Dokumentasi" : "Tambah Dokumentasi"}
                   </h2>
                   <Button variant="ghost" size="sm" onClick={closeModal}>
                     <X className="h-4 w-4" />
@@ -577,22 +605,23 @@ const AdminPortfolio = () => {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="title">Judul Proyek *</Label>
+                      <Label htmlFor="title">Judul Kegiatan *</Label>
                       <Input
                         id="title"
                         value={formData.title}
                         onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                        placeholder="Masukkan judul proyek"
+                        placeholder="Masukkan judul kegiatan"
                         required
                       />
                     </div>
                     <div>
-                      <Label htmlFor="client">Client</Label>
+                      <Label htmlFor="location">Lokasi *</Label>
                       <Input
-                        id="client"
-                        value={formData.client}
-                        onChange={(e) => setFormData(prev => ({ ...prev, client: e.target.value }))}
-                        placeholder="Nama client"
+                        id="location"
+                        value={formData.location}
+                        onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                        placeholder="Lokasi pengambilan foto"
+                        required
                       />
                     </div>
                   </div>
@@ -822,13 +851,13 @@ const AdminPortfolio = () => {
                         
                         {/* URL input as fallback */}
                         <div>
-                          <Label htmlFor="featured_image" className="text-sm text-muted-foreground">
+                          <Label htmlFor="image_url" className="text-sm text-muted-foreground">
                             Atau masukkan URL gambar
                           </Label>
                           <Input
-                            id="featured_image"
-                            value={formData.featured_image}
-                            onChange={(e) => setFormData(prev => ({ ...prev, featured_image: e.target.value }))}
+                            id="image_url"
+                            value={formData.image_url}
+                            onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
                             placeholder="https://example.com/image.jpg"
                             disabled={!!selectedFile}
                           />
@@ -839,51 +868,32 @@ const AdminPortfolio = () => {
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="project_url">URL Proyek</Label>
-                      <Input
-                        id="project_url"
-                        value={formData.project_url}
-                        onChange={(e) => setFormData(prev => ({ ...prev, project_url: e.target.value }))}
-                        placeholder="https://example.com"
-                      />
+                      <Label htmlFor="category">Kategori *</Label>
+                      <Select
+                        value={formData.category}
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih kategori" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Rapat">Rapat</SelectItem>
+                          <SelectItem value="Reses">Reses</SelectItem>
+                          <SelectItem value="Kunjungan">Kunjungan</SelectItem>
+                          <SelectItem value="Bantuan">Bantuan</SelectItem>
+                          <SelectItem value="Event">Event</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div>
-                      <Label htmlFor="github_url">URL GitHub</Label>
+                      <Label htmlFor="photographer">Pencatat/Dokumentasi *</Label>
                       <Input
-                        id="github_url"
-                        value={formData.github_url}
-                        onChange={(e) => setFormData(prev => ({ ...prev, github_url: e.target.value }))}
-                        placeholder="https://github.com/username/repo"
+                        id="photographer"
+                        value={formData.photographer}
+                        onChange={(e) => setFormData(prev => ({ ...prev, photographer: e.target.value }))}
+                        placeholder="Nama pencatat dokumentasi"
+                        required
                       />
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label>Teknologi</Label>
-                    <div className="flex gap-2 mb-2">
-                      <Input
-                        value={technologyInput}
-                        onChange={(e) => setTechnologyInput(e.target.value)}
-                        placeholder="React, Node.js, dll"
-                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTechnology())}
-                      />
-                      <Button type="button" onClick={addTechnology} variant="outline">
-                        Tambah
-                      </Button>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {formData.technologies.map((tech, index) => (
-                        <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                          {tech}
-                          <button
-                            type="button"
-                            onClick={() => removeTechnology(tech)}
-                            className="ml-1 hover:text-red-500"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </Badge>
-                      ))}
                     </div>
                   </div>
 
@@ -929,7 +939,7 @@ const AdminPortfolio = () => {
                       ) : (
                         <>
                           <Save className="h-4 w-4" />
-                          {editingPortfolio ? "Update Portofolio" : "Simpan Portofolio"}
+                          {editingGallery ? "Update Dokumentasi" : "Simpan Dokumentasi"}
                         </>
                       )}
                     </Button>

@@ -21,7 +21,9 @@ import {
   Home
 } from "lucide-react";
 import { getPostBySlug, getPublishedPosts, getPopularPosts } from "@/lib/blogService";
+import { sanitizeHTML } from "@/lib/sanitize";
 import { BlogPost } from "@/lib/supabase";
+import { getCurrentDomain } from "@/lib/urlUtils";
 import Header from "./Header";
 import Footer from "./Footer";
 import { showSuccess } from "@/lib/sweetAlert";
@@ -35,6 +37,17 @@ const BlogDetail = () => {
   const [popularTags, setPopularTags] = useState<{tag: string, count: number}[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const loadPopularPosts = useCallback(async () => {
+    try {
+      const popular = await getPopularPosts(6);
+      // Exclude current post from popular posts
+      const filteredPopular = popular.filter(p => p.id !== post?.id);
+      setPopularPosts(filteredPopular);
+    } catch (error) {
+      console.error("Error loading popular posts:", error);
+    }
+  }, [post?.id]);
 
   const loadPost = useCallback(async () => {
     try {
@@ -61,7 +74,7 @@ const BlogDetail = () => {
     } finally {
       setLoading(false);
     }
-  }, [slug]); // Menambahkan slug sebagai dependency
+  }, [slug, loadPopularPosts]); // Menambahkan slug dan loadPopularPosts sebagai dependency
 
   useEffect(() => {
     if (slug) {
@@ -100,17 +113,6 @@ const BlogDetail = () => {
       setRelatedPosts(related);
     } catch (error) {
       console.error("Error loading related posts:", error);
-    }
-  };
-
-  const loadPopularPosts = async () => {
-    try {
-      const popular = await getPopularPosts(6);
-      // Exclude current post from popular posts
-      const filteredPopular = popular.filter(p => p.id !== post?.id);
-      setPopularPosts(filteredPopular);
-    } catch (error) {
-      console.error("Error loading popular posts:", error);
     }
   };
 
@@ -337,7 +339,7 @@ const BlogDetail = () => {
     <div className="min-h-screen bg-gradient-to-br from-background to-muted">
       <Helmet>
         {/* Basic Meta Tags */}
-        <title>{post.title} | Idea Digital Creative</title>
+        <title>{post.title} | Official Website Dr. Ir. H. AGUS AMBO DJIWA, M.P.</title>
         <meta name="description" content={post.excerpt} />
         <meta name="author" content={post.author} />
         
@@ -345,8 +347,8 @@ const BlogDetail = () => {
         <meta property="og:title" content={post.title} />
         <meta property="og:description" content={post.excerpt} />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content={`https://ideadigiralcreative.com/blog/${post.slug}`} />
-        <meta property="og:site_name" content="Idea Digital Creative" />
+        <meta property="og:url" content={`https://getCurrentDomain()/blog/${post.slug}`} />
+        <meta property="og:site_name" content="Official Website Dr. Ir. H. AGUS AMBO DJIWA, M.P." />
         <meta property="og:locale" content="id_ID" />
         
         {/* Open Graph Image - Perbaikan untuk WhatsApp */}
@@ -363,13 +365,13 @@ const BlogDetail = () => {
               return post.featured_image;
             }
             // Jika featured_image adalah path relatif, buat URL lengkap
-            const fullUrl = `https://ideadigiralcreative.com${post.featured_image.startsWith('/') ? '' : '/'}${post.featured_image}`;
+            const fullUrl = `https://getCurrentDomain()${post.featured_image.startsWith('/') ? '' : '/'}${post.featured_image}`;
             console.log('🔗 [BlogDetail] OG Image - Path relatif, dibuat URL lengkap:', fullUrl);
             return fullUrl;
           }
           // Fallback ke logo website
           console.log('🔗 [BlogDetail] OG Image - Fallback ke logo');
-          return 'https://ideadigiralcreative.com/logo.png';
+          return 'https://getCurrentDomain()/logo.png';
         })()} />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
@@ -383,9 +385,9 @@ const BlogDetail = () => {
             if (post.featured_image.startsWith('data:image/')) {
               return post.featured_image;
             }
-            return `https://ideadigiralcreative.com${post.featured_image.startsWith('/') ? '' : '/'}${post.featured_image}`;
+            return `https://getCurrentDomain()${post.featured_image.startsWith('/') ? '' : '/'}${post.featured_image}`;
           }
-          return 'https://ideadigiralcreative.com/logo.png';
+          return 'https://getCurrentDomain()/logo.png';
         })()} />
         
         {/* Article Specific Meta Tags */}
@@ -408,9 +410,9 @@ const BlogDetail = () => {
             if (post.featured_image.startsWith('data:image/')) {
               return post.featured_image;
             }
-            return `https://ideadigiralcreative.com${post.featured_image.startsWith('/') ? '' : '/'}${post.featured_image}`;
+            return `https://getCurrentDomain()${post.featured_image.startsWith('/') ? '' : '/'}${post.featured_image}`;
           }
-          return 'https://ideadigiralcreative.com/logo.png';
+          return 'https://getCurrentDomain()/logo.png';
         })()} />
         <meta name="twitter:site" content="@Komunitas Lombok Pasangkayu" />
         <meta name="twitter:creator" content="@Komunitas Lombok Pasangkayu" />
@@ -419,7 +421,7 @@ const BlogDetail = () => {
         <meta name="robots" content="index, follow" />
         <meta name="author" content={post.author} />
         <meta name="keywords" content={post.tags ? post.tags.join(', ') : 'blog, artikel, website'} />
-        <link rel="canonical" href={`https://ideadigiralcreative.com/blog/${post.slug}`} />
+        <link rel="canonical" href={`https://getCurrentDomain()/blog/${post.slug}`} />
         
         {/* Additional Open Graph Tags untuk WhatsApp */}
         <meta property="og:determiner" content="the" />
@@ -437,9 +439,9 @@ const BlogDetail = () => {
             if (post.featured_image.startsWith('data:image/')) {
               return post.featured_image;
             }
-            return `https://ideadigiralcreative.com${post.featured_image.startsWith('/') ? '' : '/'}${post.featured_image}`;
+            return `https://getCurrentDomain()${post.featured_image.startsWith('/') ? '' : '/'}${post.featured_image}`;
           }
-          return 'https://ideadigiralcreative.com/logo.png';
+          return 'https://getCurrentDomain()/logo.png';
         })()} />
         
         {/* Additional meta tags untuk WhatsApp dan social media */}
@@ -447,7 +449,7 @@ const BlogDetail = () => {
         <meta name="msapplication-TileColor" content="#3b82f6" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Idea Digital Creative" />
+        <meta name="apple-mobile-web-app-title" content="Official Website Dr. Ir. H. AGUS AMBO DJIWA, M.P." />
         
         {/* Cache control untuk social media crawlers */}
         <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
@@ -579,7 +581,7 @@ const BlogDetail = () => {
                                                                                  <div 
                         className="leading-loose text-gray-800 [&>h1]:text-2xl [&>h1]:font-bold [&>h1]:text-secondary [&>h1]:mb-2 [&>h1]:mt-12 [&>h1]:first:mt-0 [&>h2]:text-xl [&>h2]:font-bold [&>h2]:text-secondary [&>h2]:mb-2 [&>h2]:mt-4 [&>h3]:text-lg [&>h3]:font-bold [&>h3]:text-secondary [&>h3]:mb-2 [&>h3]:mt-3 [&>p]:mb-6 [&>p]:last:mb-0 [&>ol]:mb-3 [&>ol]:pl-6 [&>ol]:list-decimal [&>ol>li]:mb-1 [&>ul]:mb-3 [&>ul]:pl-6 [&>ul]:list-disc [&>ul>li]:mb-1"
                       dangerouslySetInnerHTML={{
-                        __html: formatContentWithHeadings(post.content)
+                        __html: sanitizeHTML(formatContentWithHeadings(post.content))
                       }}
                     />
                  </div>

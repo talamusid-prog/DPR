@@ -1,316 +1,186 @@
-import { supabase, GalleryImage, CreateGalleryImage } from './supabase';
+import { supabase, Gallery, CreateGallery } from './supabase'
 
-// Fungsi untuk membuat slug
-const generateSlug = (title: string): string => {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .trim();
-};
-
-// Fungsi untuk mengambil semua gambar galeri
-export const getAllGalleryImages = async (): Promise<GalleryImage[]> => {
+// Service untuk mengelola gallery foto
+export const getAllGalleries = async (): Promise<Gallery[]> => {
   try {
     const { data, error } = await supabase
       .from('gallery_images')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
 
-    if (error) {
-      console.error('❌ Error fetching gallery images:', error);
-      throw error;
-    }
-
-    return data || [];
+    if (error) throw error
+    return data || []
   } catch (error) {
-    console.error('❌ Error in getAllGalleryImages:', error);
-    throw error;
+    console.error('Error fetching galleries:', error)
+    return []
   }
-};
+}
 
-// Fungsi untuk mengambil gambar galeri yang published
-export const getPublishedGalleryImages = async (): Promise<GalleryImage[]> => {
+export const getPublishedGalleries = async (): Promise<Gallery[]> => {
   try {
     const { data, error } = await supabase
       .from('gallery_images')
       .select('*')
       .eq('status', 'published')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
 
-    if (error) {
-      console.error('❌ Error fetching published gallery images:', error);
-      throw error;
-    }
-
-    return data || [];
+    if (error) throw error
+    return data || []
   } catch (error) {
-    console.error('❌ Error in getPublishedGalleryImages:', error);
-    throw error;
+    console.error('Error fetching published galleries:', error)
+    return []
   }
-};
+}
 
-// Fungsi untuk mengambil gambar galeri berdasarkan kategori
-export const getGalleryImagesByCategory = async (category: string): Promise<GalleryImage[]> => {
+export const getFeaturedGalleries = async (): Promise<Gallery[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('gallery_images')
+      .select('*')
+      .eq('status', 'published')
+      .eq('featured', true)
+      .order('created_at', { ascending: false })
+      .limit(6)
+
+    if (error) throw error
+    return data || []
+  } catch (error) {
+    console.error('Error fetching featured galleries:', error)
+    return []
+  }
+}
+
+export const getGalleryBySlug = async (slug: string): Promise<Gallery | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('gallery_images')
+      .select('*')
+      .eq('slug', slug)
+      .eq('status', 'published')
+      .single()
+
+    if (error) throw error
+    return data
+  } catch (error) {
+    console.error('Error fetching gallery by slug:', error)
+    return null
+  }
+}
+
+export const getGalleriesByCategory = async (category: string): Promise<Gallery[]> => {
   try {
     const { data, error } = await supabase
       .from('gallery_images')
       .select('*')
       .eq('category', category)
       .eq('status', 'published')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
 
-    if (error) {
-      console.error('❌ Error fetching gallery images by category:', error);
-      throw error;
-    }
-
-    return data || [];
+    if (error) throw error
+    return data || []
   } catch (error) {
-    console.error('❌ Error in getGalleryImagesByCategory:', error);
-    throw error;
+    console.error('Error fetching galleries by category:', error)
+    return []
   }
-};
+}
 
-// Fungsi untuk mengambil gambar galeri featured
-export const getFeaturedGalleryImages = async (): Promise<GalleryImage[]> => {
+export const createGallery = async (gallery: CreateGallery): Promise<Gallery | null> => {
   try {
     const { data, error } = await supabase
       .from('gallery_images')
-      .select('*')
-      .eq('featured', true)
-      .eq('status', 'published')
-      .order('created_at', { ascending: false });
+      .insert([gallery])
+      .select()
+      .single()
 
-    if (error) {
-      console.error('❌ Error fetching featured gallery images:', error);
-      throw error;
-    }
-
-    return data || [];
+    if (error) throw error
+    return data
   } catch (error) {
-    console.error('❌ Error in getFeaturedGalleryImages:', error);
-    throw error;
+    console.error('Error creating gallery:', error)
+    return null
   }
-};
+}
 
-// Fungsi untuk mengambil gambar galeri berdasarkan slug
-export const getGalleryImageBySlug = async (slug: string): Promise<GalleryImage | null> => {
+export const updateGallery = async (id: string, gallery: Partial<CreateGallery>): Promise<Gallery | null> => {
   try {
     const { data, error } = await supabase
       .from('gallery_images')
-      .select('*')
-      .eq('slug', slug)
-      .eq('status', 'published')
-      .single();
+      .update(gallery)
+      .eq('id', id)
+      .select()
+      .single()
 
-    if (error) {
-      if (error.code === 'PGRST116') {
-        // No rows returned
-        return null;
-      }
-      console.error('❌ Error fetching gallery image by slug:', error);
-      throw error;
-    }
-
-    return data;
+    if (error) throw error
+    return data
   } catch (error) {
-    console.error('❌ Error in getGalleryImageBySlug:', error);
-    throw error;
+    console.error('Error updating gallery:', error)
+    return null
   }
-};
+}
 
-// Fungsi untuk membuat gambar galeri dengan slug otomatis
-export const createGalleryImageWithSlug = async (imageData: Omit<CreateGalleryImage, 'slug'>): Promise<boolean> => {
-  try {
-    const slug = generateSlug(imageData.title);
-    
-    // Check if slug already exists
-    const { data: existingImage } = await supabase
-      .from('gallery_images')
-      .select('slug')
-      .eq('slug', slug)
-      .single();
-
-    let finalSlug = slug;
-    if (existingImage) {
-      // If slug exists, add timestamp to make it unique
-      finalSlug = `${slug}-${Date.now()}`;
-    }
-
-    const galleryImageWithSlug = {
-      ...imageData,
-      slug: finalSlug
-    };
-
-    const { error } = await supabase
-      .from('gallery_images')
-      .insert([galleryImageWithSlug]);
-
-    if (error) {
-      console.error('❌ Error creating gallery image:', error);
-      return false;
-    }
-
-    console.log('✅ Gallery image created successfully');
-    return true;
-  } catch (error) {
-    console.error('❌ Error in createGalleryImageWithSlug:', error);
-    return false;
-  }
-};
-
-// Fungsi untuk update gambar galeri berdasarkan slug
-export const updateGalleryImageBySlug = async (slug: string, imageData: Partial<CreateGalleryImage>): Promise<boolean> => {
-  try {
-    // If title is being updated, generate new slug
-    let updateData = { ...imageData };
-    if (imageData.title) {
-      const newSlug = generateSlug(imageData.title);
-      if (newSlug !== slug) {
-        // Check if new slug already exists
-        const { data: existingImage } = await supabase
-          .from('gallery_images')
-          .select('slug')
-          .eq('slug', newSlug)
-          .single();
-
-        let finalSlug = newSlug;
-        if (existingImage) {
-          finalSlug = `${newSlug}-${Date.now()}`;
-        }
-        updateData = { ...updateData, slug: finalSlug };
-      }
-    }
-
-    const { error } = await supabase
-      .from('gallery_images')
-      .update(updateData)
-      .eq('slug', slug);
-
-    if (error) {
-      console.error('❌ Error updating gallery image:', error);
-      return false;
-    }
-
-    console.log('✅ Gallery image updated successfully');
-    return true;
-  } catch (error) {
-    console.error('❌ Error in updateGalleryImageBySlug:', error);
-    return false;
-  }
-};
-
-// Fungsi untuk update gambar galeri berdasarkan ID
-export const updateGalleryImageById = async (id: string, imageData: Partial<CreateGalleryImage>): Promise<boolean> => {
-  try {
-    // If title is being updated, generate new slug
-    let updateData = { ...imageData };
-    if (imageData.title) {
-      const newSlug = generateSlug(imageData.title);
-      
-      // Check if new slug already exists (but not for current image)
-      const { data: existingImage } = await supabase
-        .from('gallery_images')
-        .select('slug')
-        .eq('slug', newSlug)
-        .neq('id', id)
-        .single();
-
-      let finalSlug = newSlug;
-      if (existingImage) {
-        finalSlug = `${newSlug}-${Date.now()}`;
-      }
-      updateData = { ...updateData, slug: finalSlug };
-    }
-
-    const { error } = await supabase
-      .from('gallery_images')
-      .update(updateData)
-      .eq('id', id);
-
-    if (error) {
-      console.error('❌ Error updating gallery image:', error);
-      return false;
-    }
-
-    console.log('✅ Gallery image updated successfully');
-    return true;
-  } catch (error) {
-    console.error('❌ Error in updateGalleryImageById:', error);
-    return false;
-  }
-};
-
-// Fungsi untuk menghapus gambar galeri
-export const deleteGalleryImage = async (id: string): Promise<boolean> => {
+export const deleteGallery = async (id: string): Promise<boolean> => {
   try {
     const { error } = await supabase
       .from('gallery_images')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
 
-    if (error) {
-      console.error('❌ Error deleting gallery image:', error);
-      return false;
-    }
-
-    console.log('✅ Gallery image deleted successfully');
-    return true;
+    if (error) throw error
+    return true
   } catch (error) {
-    console.error('❌ Error in deleteGalleryImage:', error);
-    return false;
+    console.error('Error deleting gallery:', error)
+    return false
   }
-};
+}
 
-// Fungsi untuk mendapatkan statistik galeri
-export const getGalleryStats = async () => {
-  try {
-    const [totalResult, publishedResult, draftResult, categoriesResult] = await Promise.all([
-      supabase.from('gallery_images').select('id', { count: 'exact' }),
-      supabase.from('gallery_images').select('id', { count: 'exact' }).eq('status', 'published'),
-      supabase.from('gallery_images').select('id', { count: 'exact' }).eq('status', 'draft'),
-      supabase.from('gallery_images').select('category').eq('status', 'published')
-    ]);
-
-    const uniqueCategories = [...new Set((categoriesResult.data || []).map(item => item.category))];
-
-    return {
-      total: totalResult.count || 0,
-      published: publishedResult.count || 0,
-      draft: draftResult.count || 0,
-      categories: uniqueCategories.length
-    };
-  } catch (error) {
-    console.error('❌ Error getting gallery stats:', error);
-    return {
-      total: 0,
-      published: 0,
-      draft: 0,
-      categories: 0
-    };
-  }
-};
-
-// Fungsi untuk search gambar galeri
-export const searchGalleryImages = async (query: string): Promise<GalleryImage[]> => {
+export const getGalleryCategories = async (): Promise<string[]> => {
   try {
     const { data, error } = await supabase
       .from('gallery_images')
-      .select('*')
+      .select('category')
       .eq('status', 'published')
-      .or(`title.ilike.%${query}%,description.ilike.%${query}%,location.ilike.%${query}%,category.ilike.%${query}%`)
-      .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('❌ Error searching gallery images:', error);
-      throw error;
-    }
-
-    return data || [];
+    if (error) throw error
+    
+    const categories = [...new Set(data?.map(item => item.category) || [])]
+    return categories.sort()
   } catch (error) {
-    console.error('❌ Error in searchGalleryImages:', error);
-    throw error;
+    console.error('Error fetching gallery categories:', error)
+    return []
   }
-};
+}
+
+// Fungsi untuk generate slug dari title
+export const generateSlug = (title: string): string => {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single
+    .trim()
+}
+
+// Fungsi untuk validasi file gambar
+export const validateImageFile = (file: File): { valid: boolean; error?: string } => {
+  const maxSize = 10 * 1024 * 1024 // 10MB
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+  
+  if (!allowedTypes.includes(file.type)) {
+    return { valid: false, error: 'Format file tidak didukung. Gunakan JPG, PNG, atau WebP.' }
+  }
+  
+  if (file.size > maxSize) {
+    return { valid: false, error: 'Ukuran file terlalu besar. Maksimal 10MB.' }
+  }
+  
+  return { valid: true }
+}
+
+// Fungsi untuk convert file ke base64
+export const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}

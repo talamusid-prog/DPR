@@ -1,93 +1,87 @@
-import { useState, useMemo } from "react";
-import { Filter, ArrowRight } from "lucide-react";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import { Filter, ArrowRight, MapPin } from "lucide-react";
+import { supabase } from "../lib/supabase";
+import { getPortfolioImageWithFallback } from "../lib/portfolioImageService";
+import type { Gallery } from "../lib/supabase";
 
 const Gallery = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [hoveredImage, setHoveredImage] = useState<string | null>(null);
+  const [galleries, setGalleries] = useState<Gallery[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Data gambar dari folder gallery lokal
-  const ntbImages = useMemo(() => [
-    {
-      id: "1",
-      title: "Penyerahan Hadiah ",
-      location: "",
-      category: "Event",
-      imageUrl: "/gallery/gallery (1).jpeg",
-      photographer: "Gallery"
-    },
-    {
-      id: "2", 
-      title: "Kunjugan ",
-      location: "",
-      category: "Kunjungan",
-      imageUrl: "/gallery/gallery (1).jpg",
-      photographer: "Gallery"
-    },
-    {
-      id: "3",
-      title: "Menerima Penghargaan MNC",
-      location: "",
-      category: "Kunjungan",
-      imageUrl: "/gallery/gallery (1).webp",
-      photographer: "Gallery"
-    },
-    {
-      id: "4",
-      title: "Rapat DPR RI",
-      location: "",
-      category: "Bantuan",
-      imageUrl: "/gallery/gallery (2).jpeg",
-      photographer: "Gallery"
-    },
-    {
-      id: "5",
-      title: "Rapat Koordinasi Program",
-      location: "",
-      category: "Rapat",
-      imageUrl: "/gallery/gallery (2).jpg",
-      photographer: "Gallery"
-    },
-    {
-      id: "6",
-      title: "Penyerahan Bantuan ",
-      location: "",
-      category: "Bantuan",
-      imageUrl: "/gallery/gallery (3).jpg",
-      photographer: "Gallery"
-    },
-    {
-      id: "7",
-      title: "Memberi Arahan",
-      location: "",
-      category: "Kunjungan",
-      imageUrl: "/gallery/gallery (4).jpg",
-      photographer: "Gallery"
+  // Hanya menggunakan data dari database Supabase
+
+  // Load galleries from Supabase
+  const loadGalleries = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const { data, error } = await supabase
+        .from('gallery_images')
+        .select('*')
+        .eq('status', 'published')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading galleries:', error);
+        setError('Gagal memuat dokumentasi');
+        return;
+      }
+
+      if (data) {
+        setGalleries(data);
+      }
+    } catch (err) {
+      console.error('Error loading galleries:', err);
+      setError('Gagal memuat dokumentasi');
+    } finally {
+      setLoading(false);
     }
-  ], []);
+  }, []);
+
+  useEffect(() => {
+    loadGalleries();
+  }, [loadGalleries]);
 
   // Update kategori yang dipilih
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
   };
 
-  // Get unique categories dari data gambar
+  // Get unique categories dari data gallery database
   const categories = useMemo(() => {
-    const uniqueCategories = [...new Set(ntbImages.map(img => img.category))];
+    const uniqueCategories = [...new Set(galleries.map(img => img.category))];
     return ["All", ...uniqueCategories];
-  }, [ntbImages]);
+  }, [galleries]);
 
   // Filter gambar berdasarkan kategori yang dipilih
-  const filteredImages = useMemo(() => {
+  const filteredImages = useMemo((): Gallery[] => {
     return selectedCategory === "All" 
-      ? ntbImages 
-      : ntbImages.filter(image => image.category === selectedCategory);
-  }, [selectedCategory, ntbImages]);
+      ? galleries 
+      : galleries.filter(image => image.category === selectedCategory);
+  }, [selectedCategory, galleries]);
 
+
+  // Get image URL for gallery items
+  const getImageUrl = useCallback(async (gallery: Gallery) => {
+    if (gallery.image_url) {
+      try {
+        return await getPortfolioImageWithFallback(gallery.image_url);
+      } catch (error) {
+        console.error('Error loading image:', error);
+        return '/public/logo.png'; // Fallback image
+      }
+    }
+    return '/public/logo.png';
+  }, []);
 
   // Handler untuk tombol Lihat Galeri Lainnya
   const handleViewAllGallery = () => {
-    // Bisa diarahkan ke halaman gallery khusus atau modal
-    console.log('View all gallery clicked');
+    // Navigate to dokumentasi page
+    window.location.href = '/dokumentasi';
   };
 
 
@@ -149,52 +143,104 @@ const Gallery = () => {
           </div>
         </div>
 
-        {/* Masonry Gallery */}
-        {filteredImages.length === 0 ? (
+        {/* Loading State */}
+        {loading && (
           <div className="text-center py-8 sm:py-12">
-            <p className="text-muted-foreground text-base sm:text-lg">
-              Belum ada gambar yang tersedia.
-            </p>
+            <div className="inline-flex items-center gap-2 text-muted-foreground">
+              <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+              <span>Memuat dokumentasi...</span>
+            </div>
           </div>
-        ) : (
-          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 sm:gap-6 mb-8 sm:mb-12">
-            {filteredImages.map((image) => (
-              <div 
-                key={image.id}
-                className="group relative overflow-hidden rounded-xl sm:rounded-2xl bg-card border border-border shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 mb-4 sm:mb-6 break-inside-avoid"
-                onMouseEnter={() => setHoveredImage(image.id)}
-                onMouseLeave={() => setHoveredImage(null)}
-              >
-                {/* Image Container */}
-                <div className="relative overflow-hidden">
-                  <img
-                    src={image.imageUrl}
-                    alt={image.title}
-                    className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-110"
-                    loading="lazy"
-                  />
-                  
+        )}
 
-                  {/* Category Badge */}
-                  <div className="absolute top-3 sm:top-4 left-3 sm:left-4">
-                    <span className="inline-block px-2 sm:px-3 py-1 text-xs font-semibold text-white bg-primary/90 backdrop-blur-sm rounded-full">
-                      {image.category}
-                    </span>
+        {/* Error State */}
+        {error && !loading && (
+          <div className="text-center py-8 sm:py-12">
+            <p className="text-red-500 text-base sm:text-lg mb-4">
+              {error}
+            </p>
+            <button 
+              onClick={loadGalleries}
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              Coba Lagi
+            </button>
+          </div>
+        )}
+
+        {/* Masonry Gallery */}
+        {!loading && !error && filteredImages.length === 0 && (
+          <div className="text-center py-8 sm:py-12">
+            <div className="max-w-md mx-auto">
+              <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
+                <Filter className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                Belum Ada Dokumentasi
+              </h3>
+              
+            </div>
+          </div>
+        )}
+
+        {!loading && !error && filteredImages.length > 0 && (
+          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 sm:gap-6 mb-8 sm:mb-12">
+            {filteredImages.map((gallery) => {
+              // Semua data sekarang dari database Supabase
+              const imageUrl = gallery.image_url;
+              const title = gallery.title;
+              const category = gallery.category;
+              const photographer = gallery.photographer;
+              const location = gallery.location;
+
+              return (
+                <div 
+                  key={gallery.id}
+                  className="group relative overflow-hidden rounded-xl sm:rounded-2xl bg-card border border-border shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 mb-4 sm:mb-6 break-inside-avoid"
+                  onMouseEnter={() => setHoveredImage(gallery.id)}
+                  onMouseLeave={() => setHoveredImage(null)}
+                >
+                  {/* Image Container */}
+                  <div className="relative overflow-hidden">
+                    <img
+                      src={imageUrl}
+                      alt={title}
+                      className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-110"
+                      loading="lazy"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/public/logo.png';
+                      }}
+                    />
+                    
+                    {/* Category Badge */}
+                    <div className="absolute top-3 sm:top-4 left-3 sm:left-4">
+                      <span className="inline-block px-2 sm:px-3 py-1 text-xs font-semibold text-white bg-primary/90 backdrop-blur-sm rounded-full">
+                        {category}
+                      </span>
+                    </div>
+
                   </div>
 
+                  {/* Image Info */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-3 sm:p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    <h3 className="text-white font-semibold text-sm sm:text-base line-clamp-1 mb-1">
+                      {title}
+                    </h3>
+                    {photographer && (
+                      <p className="text-white/80 text-xs mb-1">
+                        {photographer}
+                      </p>
+                    )}
+                    {location && (
+                      <p className="text-white/70 text-xs flex items-center gap-1">
+                        <MapPin className="w-3 h-3" strokeWidth={1.5} />
+                        {location}
+                      </p>
+                    )}
+                  </div>
                 </div>
-
-                {/* Image Info */}
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-3 sm:p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                  <h3 className="text-white font-semibold text-sm sm:text-base line-clamp-1 mb-1">
-                    {image.title}
-                  </h3>
-                  <p className="text-white/80 text-xs">
-                    {image.photographer}
-                  </p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

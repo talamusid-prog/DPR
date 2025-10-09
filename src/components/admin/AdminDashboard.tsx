@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { 
-  LayoutDashboard, 
-  FileText, 
   Plus, 
   Search, 
   Calendar, 
@@ -17,12 +15,17 @@ import {
   Eye,
   EyeOff,
   BarChart3,
-  Settings,
-  Camera
+  FileText,
+  Palette,
+  Menu,
+  X
 } from "lucide-react";
+import AdminSidebar from "./AdminSidebar";
 import { getAllPosts, deletePost } from "@/lib/blogService";
+import { countNewAspirasi } from "@/lib/aspirasiService";
 import { BlogPost } from "@/lib/supabase";
 import { showSuccess, showError, showConfirm } from "@/lib/sweetAlert";
+import AdminColorSettings from "./AdminColorSettings";
 
 interface AdminDashboardProps {
   onLogout?: () => void;
@@ -30,15 +33,43 @@ interface AdminDashboardProps {
 
 const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredPosts, setFilteredPosts] = useState<BlogPost[]>([]);
+  const [newAspCount, setNewAspCount] = useState<number>(0);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Load posts on component mount
   useEffect(() => {
     loadPosts();
+    (async () => {
+      const c = await countNewAspirasi();
+      setNewAspCount(c);
+    })();
+  }, []);
+
+  // Sync active tab with query param (?tab=...)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab');
+    if (tab && ["dashboard","posts","analytics","settings"].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, [location.search]);
+
+  // Auto-close sidebar on desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const loadPosts = async () => {
@@ -123,145 +154,95 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
 
 
 
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex">
+        {/* Mobile Menu Button */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-lg border hover:bg-gray-50 transition-colors"
+        >
+          {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
+
         {/* Sidebar */}
-        <div className="w-64 bg-white shadow-lg min-h-screen">
-          <div className="p-6 border-b">
-            <h1 className="text-xl font-bold text-gray-800">Admin Panel</h1>
-            <p className="text-sm text-gray-600">Blog Management</p>
-          </div>
-          
-          <nav className="p-4">
-            <div className="space-y-2">
-              <button
-                onClick={() => setActiveTab("dashboard")}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                  activeTab === "dashboard" 
-                    ? "bg-red-50 text-red-700 border border-red-200" 
-                    : "text-gray-700 hover:bg-gray-50"
-                }`}
-              >
-                <LayoutDashboard className="h-5 w-5" />
-                Dashboard
-              </button>
-              
-              <button
-                onClick={() => setActiveTab("posts")}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                  activeTab === "posts" 
-                    ? "bg-red-50 text-red-700 border border-red-200" 
-                    : "text-gray-700 hover:bg-gray-50"
-                }`}
-              >
-                <FileText className="h-5 w-5" />
-                Artikel
-              </button>
-              
-              <button
-                onClick={() => navigate('/admin-gallery')}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-50"
-              >
-                <Camera className="h-5 w-5" />
-                Galeri Komunitas
-              </button>
-              
-              <button
-                onClick={() => setActiveTab("analytics")}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                  activeTab === "analytics" 
-                    ? "bg-red-50 text-red-700 border border-red-200" 
-                    : "text-gray-700 hover:bg-gray-50"
-                }`}
-              >
-                <BarChart3 className="h-5 w-5" />
-                Analytics
-              </button>
-              
-              <button
-                onClick={() => setActiveTab("settings")}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                  activeTab === "settings" 
-                    ? "bg-red-50 text-red-700 border border-red-200" 
-                    : "text-gray-700 hover:bg-gray-50"
-                }`}
-              >
-                <Settings className="h-5 w-5" />
-                Pengaturan
-              </button>
-            </div>
-          </nav>
-          
-          {onLogout && (
-            <div className="p-4 border-t">
-              <Button 
-                variant="outline" 
-                onClick={onLogout}
-                className="w-full"
-              >
-                Logout
-              </Button>
-            </div>
-          )}
+        <div className={`
+          fixed lg:fixed inset-y-0 left-0 z-40 w-64 bg-white border-r
+          transform transition-transform duration-300 ease-in-out
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}>
+          <AdminSidebar 
+            active={activeTab as 'dashboard' | 'artikel' | 'gallery' | 'aspirasi' | 'analytics' | 'settings'} 
+            onClose={() => setSidebarOpen(false)}
+          />
         </div>
 
+        {/* Mobile Overlay */}
+        {sidebarOpen && (
+          <div 
+            className="lg:hidden fixed inset-0 z-30 bg-black bg-opacity-50"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
         {/* Main Content */}
-        <div className="flex-1 p-8">
+        <div className="flex-1 p-4 sm:p-6 lg:p-8 lg:ml-64">
           {activeTab === "dashboard" && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Dashboard</h2>
                 <div className="flex gap-2">
                   <Button 
                     onClick={() => navigate('/create-article')}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 w-full sm:w-auto"
                   >
                     <Plus className="h-4 w-4" />
-                    Buat Artikel Baru
+                    <span className="hidden sm:inline">Buat Artikel Baru</span>
+                    <span className="sm:hidden">Buat Artikel</span>
                   </Button>
                 </div>
               </div>
 
               {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <Card>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+                <Card className="p-3 sm:p-4 lg:p-6">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Artikel</CardTitle>
-                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    <CardTitle className="text-xs sm:text-sm font-medium">Total Artikel</CardTitle>
+                    <FileText className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                   </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stats.totalPosts}</div>
+                  <CardContent className="pt-0">
+                    <div className="text-lg sm:text-xl lg:text-2xl font-bold">{stats.totalPosts}</div>
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="p-3 sm:p-4 lg:p-6">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Published</CardTitle>
-                    <Eye className="h-4 w-4 text-muted-foreground" />
+                    <CardTitle className="text-xs sm:text-sm font-medium">Published</CardTitle>
+                    <Eye className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                   </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-green-600">{stats.publishedPosts}</div>
+                  <CardContent className="pt-0">
+                    <div className="text-lg sm:text-xl lg:text-2xl font-bold text-green-600">{stats.publishedPosts}</div>
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="p-3 sm:p-4 lg:p-6">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Draft</CardTitle>
-                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    <CardTitle className="text-xs sm:text-sm font-medium">Draft</CardTitle>
+                    <EyeOff className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                   </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-orange-600">{stats.draftPosts}</div>
+                  <CardContent className="pt-0">
+                    <div className="text-lg sm:text-xl lg:text-2xl font-bold text-orange-600">{stats.draftPosts}</div>
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="p-3 sm:p-4 lg:p-6">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Views</CardTitle>
-                    <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                    <CardTitle className="text-xs sm:text-sm font-medium">Total Views</CardTitle>
+                    <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                   </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stats.totalViews}</div>
+                  <CardContent className="pt-0">
+                    <div className="text-lg sm:text-xl lg:text-2xl font-bold">{stats.totalViews}</div>
                   </CardContent>
                 </Card>
               </div>
@@ -285,38 +266,41 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                       <p className="text-gray-600">Belum ada artikel</p>
                     </div>
                   ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-3 sm:space-y-4">
                       {posts.slice(0, 5).map((post) => (
-                        <div key={post.id} className="flex items-center justify-between p-4 border rounded-lg">
-                          <div className="flex-1">
-                            <h3 className="font-medium text-gray-900">{post.title}</h3>
-                            <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">
+                        <div key={post.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border rounded-lg gap-3 sm:gap-4">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-medium text-gray-900 line-clamp-1 sm:line-clamp-none">{post.title}</h3>
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-1 text-xs sm:text-sm text-gray-600">
                               <span className="flex items-center gap-1">
                                 <User className="h-3 w-3" />
-                                {post.author}
+                                <span className="line-clamp-1">{post.author}</span>
                               </span>
                               <span className="flex items-center gap-1">
                                 <Calendar className="h-3 w-3" />
-                                {formatDate(post.published_at)}
+                                <span className="line-clamp-1">{formatDate(post.published_at)}</span>
                               </span>
-                              {getStatusBadge(post.status)}
+                              <div className="flex-shrink-0">
+                                {getStatusBadge(post.status)}
+                              </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-shrink-0">
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => handleEditPost(post)}
+                              className="p-1 sm:p-2"
                             >
-                              <Edit className="h-4 w-4" />
+                              <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
                             </Button>
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => handleDeletePost(post.id)}
-                              className="text-red-600 hover:text-red-700"
+                              className="p-1 sm:p-2 text-red-600 hover:text-red-700"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                             </Button>
                           </div>
                         </div>
@@ -330,21 +314,22 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
 
           {activeTab === "posts" && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-800">Kelola Artikel</h2>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Kelola Artikel</h2>
                 <div className="flex gap-2">
                   <Button 
                     onClick={() => navigate('/create-article')}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 w-full sm:w-auto"
                   >
                     <Plus className="h-4 w-4" />
-                    Buat Artikel Baru
+                    <span className="hidden sm:inline">Buat Artikel Baru</span>
+                    <span className="sm:hidden">Buat Artikel</span>
                   </Button>
                 </div>
               </div>
 
               {/* Search */}
-              <div className="max-w-md">
+              <div className="w-full max-w-md mx-auto sm:mx-0">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
@@ -352,13 +337,13 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                     placeholder="Cari artikel..."
                     value={searchQuery}
                     onChange={(e) => handleSearch(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 w-full"
                   />
                 </div>
               </div>
 
-              {/* Posts Table */}
-              <Card>
+              {/* Posts Table - Desktop */}
+              <Card className="hidden lg:block">
                 <CardContent className="p-0">
                   {loading ? (
                     <div className="text-center py-12">
@@ -373,22 +358,22 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
-                      <table className="w-full">
+                      <table className="w-full min-w-[800px]">
                         <thead className="bg-gray-50">
                           <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Judul
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Penulis
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Status
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Tanggal
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Aksi
                             </th>
                           </tr>
@@ -396,41 +381,42 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                         <tbody className="bg-white divide-y divide-gray-200">
                           {filteredPosts.map((post) => (
                             <tr key={post.id} className="hover:bg-gray-50">
-                              <td className="px-6 py-4 whitespace-nowrap">
+                              <td className="px-4 lg:px-6 py-4">
                                 <div>
-                                  <div className="text-sm font-medium text-gray-900">
+                                  <div className="text-sm font-medium text-gray-900 line-clamp-1">
                                     {post.title}
                                   </div>
-                                  <div className="text-sm text-gray-500">
-                                    {post.excerpt.substring(0, 60)}...
+                                  <div className="text-sm text-gray-500 line-clamp-1">
+                                    {post.excerpt.substring(0, 50)}...
                                   </div>
                                 </div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {post.author}
+                              <td className="px-4 lg:px-6 py-4 text-sm text-gray-900">
+                                <div className="line-clamp-1">{post.author}</div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
+                              <td className="px-4 lg:px-6 py-4">
                                 {getStatusBadge(post.status)}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {formatDate(post.published_at)}
+                              <td className="px-4 lg:px-6 py-4 text-sm text-gray-500">
+                                <div className="line-clamp-1">{formatDate(post.published_at)}</div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <div className="flex items-center gap-2">
+                              <td className="px-4 lg:px-6 py-4 text-sm font-medium">
+                                <div className="flex items-center gap-1 lg:gap-2">
                                   <Button
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handleEditPost(post)}
+                                    className="p-1 lg:p-2"
                                   >
-                                    <Edit className="h-4 w-4" />
+                                    <Edit className="h-3 w-3 lg:h-4 lg:w-4" />
                                   </Button>
                                   <Button
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handleDeletePost(post.id)}
-                                    className="text-red-600 hover:text-red-700"
+                                    className="p-1 lg:p-2 text-red-600 hover:text-red-700"
                                   >
-                                    <Trash2 className="h-4 w-4" />
+                                    <Trash2 className="h-3 w-3 lg:h-4 lg:w-4" />
                                   </Button>
                                 </div>
                               </td>
@@ -442,12 +428,66 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Posts List - Mobile & Tablet */}
+              <div className="lg:hidden space-y-2">
+                {loading ? (
+                  <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
+                    <p className="mt-2 text-sm text-gray-600">Memuat artikel...</p>
+                  </div>
+                ) : filteredPosts.length === 0 ? (
+                  <div className="text-center py-12">
+                    <p className="text-gray-600">
+                      {searchQuery ? "Tidak ada artikel yang ditemukan." : "Belum ada artikel."}
+                    </p>
+                  </div>
+                ) : (
+                  filteredPosts.map((post) => (
+                    <div key={post.id} className="bg-white border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition-colors">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="text-sm font-medium text-gray-900 line-clamp-1">
+                              {post.title}
+                            </h3>
+                            {getStatusBadge(post.status)}
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <span className="line-clamp-1">{post.author}</span>
+                            <span>•</span>
+                            <span className="line-clamp-1">{formatDate(post.published_at)}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditPost(post)}
+                            className="p-1 h-8 w-8"
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeletePost(post.id)}
+                            className="p-1 h-8 w-8 text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           )}
 
           {activeTab === "analytics" && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-gray-800">Analytics</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Analytics</h2>
               <Card>
                 <CardHeader>
                   <CardTitle>Statistik Blog</CardTitle>
@@ -464,18 +504,18 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
 
           {activeTab === "settings" && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-gray-800">Pengaturan</h2>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Pengaturan Blog</CardTitle>
-                  <CardDescription>
-                    Konfigurasi blog dan sistem
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">Fitur pengaturan akan segera hadir...</p>
-                </CardContent>
-              </Card>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center">
+                    <Palette className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
+                    Pengaturan Warna
+                  </h2>
+                  <p className="text-gray-600 mt-1 text-sm sm:text-base">
+                    Kustomisasi warna dan tema aplikasi
+                  </p>
+                </div>
+              </div>
+              <AdminColorSettings />
             </div>
           )}
         </div>

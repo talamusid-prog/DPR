@@ -22,9 +22,12 @@ import {
   Download,
   MapPin,
   Camera,
-  Filter
+  Filter,
+  Menu
 } from "lucide-react";
+import AdminSidebar from "@/components/admin/AdminSidebar";
 import { supabase } from "@/lib/supabase";
+import { countNewAspirasi } from "@/lib/aspirasiService";
 import { showSuccess, showError, showWarning, showConfirm } from "@/lib/sweetAlert";
 
 // Interface untuk Gallery
@@ -56,6 +59,7 @@ export interface CreateGalleryImage {
 
 const AdminGallery = () => {
   const navigate = useNavigate();
+  const [newAspCount, setNewAspCount] = useState<number>(0);
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -63,6 +67,7 @@ const AdminGallery = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
@@ -77,40 +82,39 @@ const AdminGallery = () => {
   });
 
   const categories = [
-    "Alam",
-    "Pantai", 
-    "Pulau",
-    "Budaya",
-    "Kegiatan Komunitas",
-    "Event",
-    "Wisata",
-    "Tradisi",
-    "Kuliner",
+    "Rapat DPR",
+    "Reses Anggota DPR", 
+    "Kunjungan Kerja",
+    "Penyerahan Bantuan",
+    "Sosialisasi Program",
+    "Konsultasi Publik",
+    "Kegiatan Komisi",
+    "Sidang Paripurna",
+    "Hearing Publik",
     "Lainnya"
   ];
 
   useEffect(() => {
     loadGalleryImages();
+    (async () => {
+      const c = await countNewAspirasi();
+      setNewAspCount(c);
+    })();
   }, []);
 
-  // Fungsi untuk menyimpan gambar sebagai base64
-  const saveImageAsBase64 = async (file: File): Promise<string | null> => {
-    try {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          resolve(reader.result as string);
-        };
-        reader.onerror = () => {
-          reject(new Error('Failed to read file'));
-        };
-        reader.readAsDataURL(file);
-      });
-    } catch (error) {
-      console.error('❌ Error converting image to base64:', error);
-      return null;
-    }
-  };
+  // Auto-close sidebar on desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Fungsi untuk menyimpan gambar sebagai base64 (tidak digunakan lagi - langsung ke formData)
 
   // Fungsi untuk handle file selection
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,10 +134,15 @@ const AdminGallery = () => {
 
       setSelectedFile(file);
       
-      // Create preview
+      // Convert to base64 dan simpan langsung ke formData (seperti blog)
       const reader = new FileReader();
       reader.onload = (e) => {
-        setImagePreview(e.target?.result as string);
+        const base64Image = e.target?.result as string;
+        setImagePreview(base64Image);
+        setFormData(prev => ({
+          ...prev,
+          image_url: base64Image
+        }));
       };
       reader.readAsDataURL(file);
     }
@@ -174,6 +183,8 @@ const AdminGallery = () => {
   const loadGalleryImages = async () => {
     try {
       setLoading(true);
+      console.log("🔄 Loading gallery images...");
+      
       const { data, error } = await supabase
         .from('gallery_images')
         .select('*')
@@ -181,10 +192,22 @@ const AdminGallery = () => {
 
       if (error) {
         console.error("❌ Error loading gallery images:", error);
-        showError("Gagal memuat galeri. Silakan refresh halaman.");
+        console.error("Error details:", {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+        
+        if (error.code === 'PGRST205') {
+          showError("Table gallery_images belum dibuat. Silakan jalankan script SQL terlebih dahulu.");
+        } else {
+          showError(`Gagal memuat galeri: ${error.message}`);
+        }
         return;
       }
 
+      console.log("✅ Gallery images loaded:", data?.length || 0, "items");
       setGalleryImages(data || []);
     } catch (error) {
       console.error("❌ Error loading gallery images:", error);
@@ -219,27 +242,14 @@ const AdminGallery = () => {
     try {
       setIsUploading(true);
       
-      let imageUrl = formData.image_url;
-      
-      // Save image as base64 if file is selected
-      if (selectedFile) {
-        const base64Image = await saveImageAsBase64(selectedFile);
-        if (base64Image) {
-          imageUrl = base64Image;
-        } else {
-          showError("Gagal menyimpan gambar. Silakan coba lagi.");
-          setIsUploading(false);
-          return;
-        }
-      }
-      
+      // Gunakan image_url yang sudah di-set dari handleFileSelect (base64)
       const galleryData: CreateGalleryImage & { slug?: string } = {
         title: formData.title.trim(),
         description: formData.description.trim(),
         location: formData.location.trim(),
-        category: formData.category.trim(),
+        category: formData.category.trim() as 'Rapat DPR' | 'Reses Anggota DPR' | 'Kunjungan Kerja' | 'Penyerahan Bantuan' | 'Sosialisasi Program' | 'Konsultasi Publik' | 'Kegiatan Komisi' | 'Sidang Paripurna' | 'Hearing Publik' | 'Lainnya',
         photographer: formData.photographer.trim() || 'Admin',
-        image_url: imageUrl || editingImage?.image_url || '',
+        image_url: formData.image_url || editingImage?.image_url || '',
         status: formData.status,
         featured: formData.featured,
         slug: generateSlug(formData.title.trim())
@@ -259,10 +269,16 @@ const AdminGallery = () => {
           showSuccess("Foto galeri berhasil diperbarui!");
         } else {
           console.error('❌ Update error:', error);
-          showError("Gagal memperbarui foto galeri.");
+          console.error("Error details:", {
+            code: error.code,
+            message: error.message,
+            details: error.details
+          });
+          showError(`Gagal memperbarui foto galeri: ${error.message}`);
         }
       } else {
         // Create new image
+        console.log("🔄 Creating new gallery image:", galleryData.title);
         const { error } = await supabase
           .from('gallery_images')
           .insert([galleryData]);
@@ -272,7 +288,12 @@ const AdminGallery = () => {
           showSuccess("Foto galeri berhasil ditambahkan!");
         } else {
           console.error('❌ Insert error:', error);
-          showError("Gagal menambahkan foto galeri.");
+          console.error("Error details:", {
+            code: error.code,
+            message: error.message,
+            details: error.details
+          });
+          showError(`Gagal menambahkan foto galeri: ${error.message}`);
         }
       }
 
@@ -310,13 +331,11 @@ const AdminGallery = () => {
 
   const handleDelete = async (id: string) => {
     const result = await showConfirm(
-      "Hapus Foto Galeri",
-      "Apakah Anda yakin ingin menghapus foto ini dari galeri?",
-      "Ya, Hapus",
-      "Batal"
+      "Hapus Dokumentasi",
+      "Apakah Anda yakin ingin menghapus dokumentasi ini?"
     );
 
-    if (result.isConfirmed) {
+    if (result) {
       try {
         const { error } = await supabase
           .from('gallery_images')
@@ -397,7 +416,7 @@ const AdminGallery = () => {
         <div className="max-w-6xl mx-auto">
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Memuat galeri komunitas...</p>
+            <p className="mt-4 text-muted-foreground">Memuat dokumentasi...</p>
           </div>
         </div>
       </div>
@@ -405,90 +424,120 @@ const AdminGallery = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted p-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gray-50">
+      <div className="flex">
+        {/* Mobile Menu Button */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-lg border hover:bg-gray-50 transition-colors"
+        >
+          {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
+
+        {/* Sidebar */}
+        <div className={`
+          fixed lg:fixed inset-y-0 left-0 z-40 w-64 bg-white border-r
+          transform transition-transform duration-300 ease-in-out
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}>
+          <AdminSidebar 
+            active="gallery" 
+            onClose={() => setSidebarOpen(false)}
+          />
+        </div>
+
+        {/* Mobile Overlay */}
+        {sidebarOpen && (
+          <div 
+            className="lg:hidden fixed inset-0 z-30 bg-black bg-opacity-50"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* Main Content */}
+        <div className="flex-1 p-4 sm:p-6 lg:p-8 lg:ml-64">
+          <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/admin')}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Kembali
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-secondary">Kelola Galeri Komunitas</h1>
-              <p className="text-muted-foreground">Kelola foto-foto kegiatan dan wisata NTB</p>
-            </div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+          <div>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-secondary">Kelola Dokumentasi</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">Kelola dokumentasi kegiatan DPR</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button onClick={exportGalleryData} variant="outline" className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <Button 
+              onClick={exportGalleryData} 
+              variant="outline" 
+              className="flex items-center justify-center gap-2 w-full sm:w-auto"
+            >
               <Download className="h-4 w-4" />
-              Export Data
+              <span className="hidden sm:inline">Export Data</span>
+              <span className="sm:hidden">Export</span>
             </Button>
-            <Button onClick={openModal} className="flex items-center gap-2">
+            <Button 
+              onClick={openModal} 
+              className="flex items-center justify-center gap-2 w-full sm:w-auto"
+            >
               <Plus className="h-4 w-4" />
-              Tambah Foto
+              <span className="hidden sm:inline">Tambah Dokumentasi</span>
+              <span className="sm:hidden">Tambah</span>
             </Button>
           </div>
         </div>
 
         {/* Stats */}
-        <div className="grid md:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <Camera className="h-8 w-8 text-primary" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
+          <Card className="p-3 sm:p-4 lg:p-6">
+            <CardContent className="p-0">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Camera className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
                 <div>
-                  <p className="text-2xl font-bold">{galleryImages.length}</p>
-                  <p className="text-sm text-muted-foreground">Total Foto</p>
+                  <p className="text-lg sm:text-xl lg:text-2xl font-bold">{galleryImages.length}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Total Foto</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <Eye className="h-8 w-8 text-green-500" />
+          <Card className="p-3 sm:p-4 lg:p-6">
+            <CardContent className="p-0">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Eye className="h-6 w-6 sm:h-8 sm:w-8 text-green-500" />
                 <div>
-                  <p className="text-2xl font-bold">{galleryImages.filter(img => img.status === 'published').length}</p>
-                  <p className="text-sm text-muted-foreground">Published</p>
+                  <p className="text-lg sm:text-xl lg:text-2xl font-bold">{galleryImages.filter(img => img.status === 'published').length}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Published</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <EyeOff className="h-8 w-8 text-gray-400" />
+          <Card className="p-3 sm:p-4 lg:p-6">
+            <CardContent className="p-0">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <EyeOff className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
                 <div>
-                  <p className="text-2xl font-bold">{galleryImages.filter(img => img.status === 'draft').length}</p>
-                  <p className="text-sm text-muted-foreground">Draft</p>
+                  <p className="text-lg sm:text-xl lg:text-2xl font-bold">{galleryImages.filter(img => img.status === 'draft').length}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Draft</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <Filter className="h-8 w-8 text-yellow-500" />
+          <Card className="p-3 sm:p-4 lg:p-6">
+            <CardContent className="p-0">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Filter className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-500" />
                 <div>
-                  <p className="text-2xl font-bold">{[...new Set(galleryImages.map(img => img.category))].length}</p>
-                  <p className="text-sm text-muted-foreground">Kategori</p>
+                  <p className="text-lg sm:text-xl lg:text-2xl font-bold">{[...new Set(galleryImages.map(img => img.category))].length}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Kategori</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Gallery Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {/* Gallery Grid - Desktop */}
+        <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {galleryImages.map((image) => (
             <Card key={image.id} className="group hover:shadow-lg transition-all duration-300">
-              <CardHeader className="pb-4">
-                <div className="aspect-square overflow-hidden rounded-lg mb-4 relative">
+              <CardHeader className="pb-3 sm:pb-4">
+                <div className="aspect-square overflow-hidden rounded-lg mb-3 sm:mb-4 relative">
                   <img
                     src={image.image_url}
                     alt={image.title}
@@ -511,42 +560,45 @@ const AdminGallery = () => {
                   </div>
                 </div>
                 <div>
-                  <CardTitle className="text-lg font-bold text-secondary group-hover:text-primary transition-colors line-clamp-2">
+                  <CardTitle className="text-base sm:text-lg font-bold text-secondary group-hover:text-primary transition-colors line-clamp-2">
                     {image.title}
                   </CardTitle>
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
+                  <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground mt-1">
                     <MapPin className="h-3 w-3" />
-                    {image.location}
+                    <span className="line-clamp-1">{image.location}</span>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
-                <p className="text-muted-foreground text-sm line-clamp-2 mb-4">
+                <p className="text-muted-foreground text-xs sm:text-sm line-clamp-2 mb-3 sm:mb-4">
                   {image.description}
                 </p>
 
-                <div className="flex items-center justify-between text-xs text-muted-foreground mb-4">
-                  <span>Foto: {image.photographer}</span>
-                  <span>{formatDate(image.created_at)}</span>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-muted-foreground mb-3 sm:mb-4 gap-1 sm:gap-0">
+                  <span className="line-clamp-1">Foto: {image.photographer}</span>
+                  <span className="line-clamp-1">{formatDate(image.created_at)}</span>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleEdit(image)}
-                    className="flex-1"
+                    className="flex-1 text-xs sm:text-sm"
                   >
                     <Edit className="h-3 w-3 mr-1" />
-                    Edit
+                    <span className="hidden sm:inline">Edit</span>
+                    <span className="sm:hidden">Edit</span>
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleDelete(image.id)}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 flex-1 sm:flex-none"
                   >
-                    <Trash2 className="h-3 w-3" />
+                    <Trash2 className="h-3 w-3 mr-1" />
+                    <span className="hidden sm:inline">Hapus</span>
+                    <span className="sm:hidden">Hapus</span>
                   </Button>
                 </div>
               </CardContent>
@@ -554,15 +606,83 @@ const AdminGallery = () => {
           ))}
         </div>
 
+        {/* Gallery List - Mobile */}
+        <div className="sm:hidden space-y-2">
+          {galleryImages.map((image) => (
+            <div key={image.id} className="bg-white border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition-colors">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0">
+                  <div className="w-16 h-16 overflow-hidden rounded-lg relative">
+                    <img
+                      src={image.image_url}
+                      alt={image.title}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute top-1 right-1">
+                      {image.featured && (
+                        <Badge variant="secondary" className="text-xs bg-yellow-500 text-white">
+                          Featured
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="absolute bottom-1 left-1">
+                      <Badge variant="outline" className="text-xs bg-white/90 text-gray-700">
+                        {image.category}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-sm font-medium text-gray-900 line-clamp-1">
+                      {image.title}
+                    </h3>
+                    <Badge variant={image.status === 'published' ? 'default' : 'secondary'} className="text-xs">
+                      {image.status === 'published' ? 'Published' : 'Draft'}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+                    <MapPin className="h-3 w-3" />
+                    <span className="line-clamp-1">{image.location}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <span className="line-clamp-1">Foto: {image.photographer}</span>
+                    <span>•</span>
+                    <span className="line-clamp-1">{formatDate(image.created_at)}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEdit(image)}
+                    className="p-1 h-8 w-8"
+                  >
+                    <Edit className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDelete(image.id)}
+                    className="p-1 h-8 w-8 text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
         {galleryImages.length === 0 && (
           <div className="text-center py-12">
             <Camera className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground text-lg">
-              Belum ada foto yang ditambahkan ke galeri.
+              Belum ada dokumentasi yang ditambahkan.
             </p>
             <Button onClick={openModal} className="mt-4">
               <Plus className="h-4 w-4 mr-2" />
-              Tambah Foto Pertama
+              Tambah Dokumentasi Pertama
             </Button>
           </div>
         )}
@@ -574,7 +694,7 @@ const AdminGallery = () => {
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-secondary">
-                    {editingImage ? "Edit Foto Galeri" : "Tambah Foto Galeri"}
+                    {editingImage ? "Edit Dokumentasi" : "Tambah Dokumentasi"}
                   </h2>
                   <Button variant="ghost" size="sm" onClick={closeModal}>
                     <X className="h-4 w-4" />
@@ -584,12 +704,12 @@ const AdminGallery = () => {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="title">Judul Foto *</Label>
+                      <Label htmlFor="title">Judul Dokumentasi *</Label>
                       <Input
                         id="title"
                         value={formData.title}
                         onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                        placeholder="Masukkan judul foto"
+                        placeholder="Masukkan judul dokumentasi"
                         required
                       />
                     </div>
@@ -648,7 +768,7 @@ const AdminGallery = () => {
                   </div>
 
                   <div>
-                    <Label>Upload Foto</Label>
+                    <Label>Upload Dokumentasi</Label>
                     <div className="space-y-3">
                       {/* Hidden file input */}
                       <input
@@ -698,7 +818,7 @@ const AdminGallery = () => {
                           <div className="space-y-2">
                             <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
                             <p className="text-sm font-medium">
-                              Klik untuk pilih foto atau drag & drop
+                              Klik untuk pilih dokumentasi atau drag & drop
                             </p>
                             <p className="text-xs text-muted-foreground">
                               JPG, PNG, WebP, GIF (max 5MB)
@@ -735,13 +855,13 @@ const AdminGallery = () => {
                       <div className="text-xs text-muted-foreground">
                         <p>Format yang didukung: JPG, PNG, WebP, GIF</p>
                         <p>Ukuran maksimal: 5MB</p>
-                        <p className="text-blue-600">💾 Foto akan disimpan sebagai base64</p>
+                        <p className="text-blue-600">💾 Dokumentasi akan disimpan sebagai base64</p>
                       </div>
                       
                       {/* URL input as fallback */}
                       <div>
                         <Label htmlFor="image_url" className="text-sm text-muted-foreground">
-                          Atau masukkan URL foto
+                          Atau masukkan URL dokumentasi
                         </Label>
                         <Input
                           id="image_url"
@@ -796,7 +916,7 @@ const AdminGallery = () => {
                       ) : (
                         <>
                           <Save className="h-4 w-4" />
-                          {editingImage ? "Update Foto" : "Simpan Foto"}
+                          {editingImage ? "Update Dokumentasi" : "Simpan Dokumentasi"}
                         </>
                       )}
                     </Button>
@@ -809,6 +929,8 @@ const AdminGallery = () => {
             </div>
           </div>
         )}
+          </div>
+        </div>
       </div>
     </div>
   );

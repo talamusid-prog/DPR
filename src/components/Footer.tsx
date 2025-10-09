@@ -22,7 +22,7 @@ const Footer = () => {
     <footer 
       className="text-white"
               style={{
-                background: 'linear-gradient(to bottom right, #800000, #4d0000)'
+                background: 'linear-gradient(to bottom, hsl(var(--primary)), hsl(var(--primary-dark) / 1.2))'
               }}
     >
       <div className="max-w-6xl mx-auto px-4 py-12">
@@ -76,7 +76,7 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="/portfolio" className="text-white/80 hover:text-primary transition-smooth">
+                <a href="/" className="text-white/80 hover:text-primary transition-smooth">
                   Galeri
                 </a>
               </li>
@@ -113,7 +113,7 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="/portfolio" className="text-white/80 hover:text-primary transition-smooth">
+                <a href="/" className="text-white/80 hover:text-primary transition-smooth">
                   Dokumentasi Kegiatan
                 </a>
               </li>
@@ -130,7 +130,7 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4">Kontak Kami</h3>
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <Phone className="w-5 h-5 text-primary flex-shrink-0" />
+                <Phone className="w-5 h-5 text-white flex-shrink-0" />
                 <button 
                   onClick={handlePhoneClick}
                   className="text-white/80 hover:text-primary transition-colors"
@@ -139,7 +139,7 @@ const Footer = () => {
                 </button>
               </div>
               <div className="flex items-center gap-3">
-                <Mail className="w-5 h-5 text-primary flex-shrink-0" />
+                <Mail className="w-5 h-5 text-white flex-shrink-0" />
                         <button 
                           onClick={handleEmailClick}
                           className="text-white/80 hover:text-primary transition-colors"
@@ -148,7 +148,7 @@ const Footer = () => {
                         </button>
               </div>
               <div className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+                <MapPin className="w-5 h-5 text-white flex-shrink-0 mt-1" />
                 <span className="text-white/80">
                   Jakarta, DKI Jakarta<br />
                   Indonesia

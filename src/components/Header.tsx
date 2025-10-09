@@ -54,7 +54,7 @@ const Header = ({ onLogoClick }: HeaderProps) => {
     { label: "Home", href: "/", isAnchor: false },
     { label: "Profil", href: "/profil", isAnchor: false },
     { label: "Kalender Kegiatan", href: "/kalender", isAnchor: false },
-    { label: "Galeri", href: "/portfolio", isAnchor: false },
+    { label: "Dokumentasi", href: "/dokumentasi", isAnchor: false },
     { label: "Berita", href: "/blog", isAnchor: false },
     { label: "Kontak", href: "/contact", isAnchor: false },
   ];
@@ -63,7 +63,7 @@ const Header = ({ onLogoClick }: HeaderProps) => {
     <header className={`sticky top-0 left-0 right-0 z-50 transition-all duration-300 ${
       isScrolled 
         ? 'bg-white/10 backdrop-blur-xl border-b border-white/20 shadow-lg shadow-black/5' 
-        : 'bg-gradient-to-br from-red-600 to-red-700'
+        : 'gradient-primary'
     }`}>
               <div className="max-w-6xl mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
@@ -99,7 +99,7 @@ const Header = ({ onLogoClick }: HeaderProps) => {
                 className={`transition-smooth font-medium bg-transparent border-none cursor-pointer text-sm lg:text-base ${
                   isScrolled 
                     ? 'text-foreground hover:text-primary' 
-                    : 'text-white hover:text-red-200'
+                    : 'text-white hover:text-white/80'
                 }`}
               >
                 {item.label}
@@ -142,7 +142,7 @@ const Header = ({ onLogoClick }: HeaderProps) => {
                 <button
                   key={item.label}
                   onClick={() => handleMenuClick(item)}
-                  className="text-white hover:text-red-200 transition-smooth font-medium bg-transparent border-none cursor-pointer text-left"
+                  className="text-white hover:text-white/80 transition-smooth font-medium bg-transparent border-none cursor-pointer text-left"
                 >
                   {item.label}
                 </button>

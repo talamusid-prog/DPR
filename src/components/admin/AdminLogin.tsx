@@ -6,20 +6,20 @@ import { Label } from "@/components/ui/label";
 import { Lock, User, Eye, EyeOff } from "lucide-react";
 
 interface AdminLoginProps {
-  onLogin: (username: string, password: string) => void;
+  onLogin: (email: string, password: string) => void;
   loading?: boolean;
   error?: string;
 }
 
 const AdminLogin = ({ onLogin, loading = false, error }: AdminLoginProps) => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (username.trim() && password.trim()) {
-      onLogin(username, password);
+    if (email.trim() && password.trim()) {
+      onLogin(email, password);
     }
   };
 
@@ -40,17 +40,17 @@ const AdminLogin = ({ onLogin, loading = false, error }: AdminLoginProps) => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Username Field */}
+              {/* Email Field */}
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="email">Email</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
-                    id="username"
-                    type="text"
-                    placeholder="Masukkan username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    id="email"
+                    type="email"
+                    placeholder="Masukkan email admin"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="pl-10"
                     required
                   />
@@ -92,7 +92,7 @@ const AdminLogin = ({ onLogin, loading = false, error }: AdminLoginProps) => {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={loading || !username.trim() || !password.trim()}
+                disabled={loading || !email.trim() || !password.trim()}
               >
                 {loading ? (
                   <div className="flex items-center gap-2">

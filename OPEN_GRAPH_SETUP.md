@@ -34,7 +34,7 @@ Dokumentasi ini menjelaskan implementasi Open Graph meta tags dan Twitter Cards 
 ### 1. **Blog Detail** (`/blog/:slug`)
 ```jsx
 <Helmet>
-  <title>{post.title} | Idea Digital Creative</title>
+  <title>{post.title} | Official Website Dr. Ir. H. AGUS AMBO DJIWA, M.P.</title>
   <meta property="og:title" content={post.title} />
   <meta property="og:description" content={post.excerpt} />
   <meta property="og:image" content={post.featured_image} />
@@ -45,8 +45,8 @@ Dokumentasi ini menjelaskan implementasi Open Graph meta tags dan Twitter Cards 
 ### 2. **Blog List** (`/blog`)
 ```jsx
 <Helmet>
-  <title>Blog & Artikel | Idea Digital Creative</title>
-  <meta property="og:title" content="Blog & Artikel | Idea Digital Creative" />
+  <title>Blog & Artikel | Official Website Dr. Ir. H. AGUS AMBO DJIWA, M.P.</title>
+  <meta property="og:title" content="Blog & Artikel | Official Website Dr. Ir. H. AGUS AMBO DJIWA, M.P." />
   <meta property="og:description" content="Temukan artikel menarik..." />
   {/* ... */}
 </Helmet>
@@ -55,7 +55,7 @@ Dokumentasi ini menjelaskan implementasi Open Graph meta tags dan Twitter Cards 
 ### 3. **Portfolio Detail** (`/portfolio/:slug`)
 ```jsx
 <Helmet>
-  <title>{portfolio.title} | Idea Digital Creative</title>
+  <title>{portfolio.title} | Official Website Dr. Ir. H. AGUS AMBO DJIWA, M.P.</title>
   <meta property="og:title" content={portfolio.title} />
   <meta property="og:description" content={portfolio.description} />
   <meta property="og:image" content={portfolio.featured_image} />
@@ -66,8 +66,8 @@ Dokumentasi ini menjelaskan implementasi Open Graph meta tags dan Twitter Cards 
 ### 4. **Portfolio List** (`/portfolio`)
 ```jsx
 <Helmet>
-  <title>Portofolio Proyek | Idea Digital Creative</title>
-  <meta property="og:title" content="Portofolio Proyek | Idea Digital Creative" />
+  <title>Portofolio Proyek | Official Website Dr. Ir. H. AGUS AMBO DJIWA, M.P.</title>
+  <meta property="og:title" content="Portofolio Proyek | Official Website Dr. Ir. H. AGUS AMBO DJIWA, M.P." />
   <meta property="og:description" content="Kumpulan proyek-proyek..." />
   {/* ... */}
 </Helmet>

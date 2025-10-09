@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Users, Send } from 'lucide-react';
+import { registrationSchema, validateForm, sanitizeInput } from '@/lib/validation';
 
 const MemberRegistration = () => {
   const [formData, setFormData] = useState({
@@ -13,30 +14,66 @@ const MemberRegistration = () => {
     occupation: '',
   });
 
+  const [errors, setErrors] = useState<Record<string, string[]>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    
+    // Sanitasi input
+    const sanitizedValue = sanitizeInput(value, 500);
+    
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: sanitizedValue
     }));
+
+    // Clear error untuk field yang sedang diedit
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: []
+      }));
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission logic here
-    console.log('Form submitted:', formData);
-    alert('Pendaftaran berhasil dikirim!');
-    // Reset form
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      address: '',
-      birthdate: '',
-      gender: '',
-      education: '',
-      occupation: '',
-    });
+    setIsSubmitting(true);
+    setErrors({});
+
+    try {
+      // Validasi form
+      const validation = validateForm(registrationSchema, formData);
+      
+      if (!validation.success) {
+        setErrors(validation.errors || {});
+        return;
+      }
+
+      // Simulasi pengiriman data (ganti dengan API call yang sesungguhnya)
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      console.log('Form submitted:', validation.data);
+      alert('Pendaftaran berhasil dikirim!');
+      
+      // Reset form
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        address: '',
+        birthdate: '',
+        gender: '',
+        education: '',
+        occupation: '',
+      });
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('Terjadi kesalahan saat mengirim pendaftaran. Silakan coba lagi.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -67,9 +104,14 @@ const MemberRegistration = () => {
               value={formData.name}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+              className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary ${
+                errors.name ? 'border-red-500' : 'border-gray-300'
+              }`}
               placeholder="Masukkan nama lengkap"
             />
+            {errors.name && (
+              <p className="text-red-500 text-sm mt-1">{errors.name[0]}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -194,10 +236,20 @@ const MemberRegistration = () => {
         <div className="flex justify-center pt-4">
           <button
             type="submit"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 transition-colors"
+            disabled={isSubmitting}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Send className="w-4 h-4" />
-            Kirim Pendaftaran
+            {isSubmitting ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                Mengirim...
+              </>
+            ) : (
+              <>
+                <Send className="w-4 h-4" />
+                Kirim Pendaftaran
+              </>
+            )}
           </button>
         </div>
       </form>

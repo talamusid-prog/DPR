@@ -1,7 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = 'https://paobhbmitoydoxnifijk.supabase.co'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhb2JoYm1pdG95ZG94bmlmaWprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MTQ5MjEsImV4cCI6MjA3NDk5MDkyMX0.vyfqLYjaFTvTB4M2A3FGLihV2bN28kroqID3K5ROTFM'
+// Menggunakan environment variables untuk keamanan
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+// Validasi environment variables
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables. Please check your .env file.')
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
@@ -35,37 +41,37 @@ export interface CreateBlogPost {
   status: 'draft' | 'published'
 }
 
-// Types untuk Portfolio
-export interface Portfolio {
+// Types untuk Gallery (Portfolio yang diubah menjadi Gallery)
+export interface Gallery {
   id: string
   title: string
   description: string
   slug: string
-  featured_image?: string
-  client: string
-  category: string
-  technologies: string[]
-  project_url?: string
-  github_url?: string
+  image_url: string
+  location: string
+  category: 'Rapat DPR' | 'Reses Anggota DPR' | 'Kunjungan Kerja' | 'Penyerahan Bantuan' | 'Sosialisasi Program' | 'Konsultasi Publik' | 'Kegiatan Komisi' | 'Sidang Paripurna' | 'Hearing Publik' | 'Lainnya'
+  photographer: string // Pencatat/Dokumentasi
   created_at: string
   updated_at: string
   status: 'draft' | 'published'
   featured: boolean
 }
 
-export interface CreatePortfolio {
+export interface CreateGallery {
   title: string
   description: string
   slug: string
-  featured_image?: string
-  client: string
-  category: string
-  technologies: string[]
-  project_url?: string
-  github_url?: string
+  image_url: string
+  location: string
+  category: 'Rapat DPR' | 'Reses Anggota DPR' | 'Kunjungan Kerja' | 'Penyerahan Bantuan' | 'Sosialisasi Program' | 'Konsultasi Publik' | 'Kegiatan Komisi' | 'Sidang Paripurna' | 'Hearing Publik' | 'Lainnya'
+  photographer: string // Pencatat/Dokumentasi
   status: 'draft' | 'published'
   featured: boolean
 }
+
+// Alias untuk backward compatibility
+export type Portfolio = Gallery
+export type CreatePortfolio = CreateGallery
 
 // Types untuk Gallery
 export interface GalleryImage {

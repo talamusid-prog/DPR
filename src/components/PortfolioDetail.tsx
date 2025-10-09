@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
@@ -17,24 +17,29 @@ import {
   Star,
   Eye
 } from "lucide-react";
-import { getPortfolioBySlug, getPublishedPortfolios, getFeaturedPortfolios } from "@/lib/portfolioService";
+import { getGalleryBySlug, getPublishedGalleries, getFeaturedGalleries } from "@/lib/galleryService";
 import { getPortfolioImage, getPortfolioImageWithFallback } from "@/lib/portfolioImageService";
-import { Portfolio } from "@/lib/supabase";
+import { sanitizeHTML } from "@/lib/sanitize";
+import { Gallery } from "@/lib/supabase";
+import { getCurrentDomain } from "@/lib/urlUtils";
 import Header from "./Header";
 import Footer from "./Footer";
 
 const PortfolioDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
-  const [relatedPortfolios, setRelatedPortfolios] = useState<Portfolio[]>([]);
-  const [featuredPortfolios, setFeaturedPortfolios] = useState<Portfolio[]>([]);
+  const [portfolio, setPortfolio] = useState<Gallery | null>(null);
+  const [relatedPortfolios, setRelatedPortfolios] = useState<Gallery[]>([]);
+  const [featuredPortfolios, setFeaturedPortfolios] = useState<Gallery[]>([]);
   const [loading, setLoading] = useState(true);
+  const [portfolioImage, setPortfolioImage] = useState<string>('');
+  const [ogImage, setOgImage] = useState<string>('');
+
 
   // Fungsi untuk mengambil gambar dari storage
-  const getImageFromLocal = (imageKey: string): string | null => {
+  const getImageFromLocal = async (imageKey: string): Promise<string | null> => {
     try {
-      return getPortfolioImage(imageKey);
+      return await getPortfolioImage(imageKey);
     } catch (error) {
       console.error('Error getting image from storage:', error);
       return null;
@@ -42,11 +47,68 @@ const PortfolioDetail = () => {
   };
   const [error, setError] = useState("");
 
+  const loadFeaturedPortfolios = useCallback(async () => {
+    try {
+      const featured = await getFeaturedGalleries();
+      // Exclude current portfolio from featured portfolios
+      const filteredFeatured = featured.filter(p => p.id !== portfolio?.id);
+      setFeaturedPortfolios(filteredFeatured);
+    } catch (error) {
+      console.error("Error loading featured portfolios:", error);
+    }
+  }, [portfolio?.id]);
+
+  const loadPortfolio = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError("");
+      
+      if (!slug) {
+        setError("Slug portofolio tidak ditemukan");
+        return;
+      }
+
+      const portfolioData = await getGalleryBySlug(slug);
+      if (portfolioData) {
+        setPortfolio(portfolioData);
+        await loadRelatedPortfolios(portfolioData);
+        await loadFeaturedPortfolios();
+      } else {
+        setError("Dokumentasi tidak ditemukan");
+      }
+    } catch (error) {
+      console.error("Error loading portfolio:", error);
+      setError("Terjadi kesalahan saat memuat portofolio");
+    } finally {
+      setLoading(false);
+    }
+  }, [slug, loadFeaturedPortfolios]);
+
   useEffect(() => {
     if (slug) {
       loadPortfolio();
     }
-  }, [slug]);
+  }, [slug, loadPortfolio]);
+
+  // Load portfolio image
+  useEffect(() => {
+    const loadPortfolioImage = async () => {
+      if (portfolio?.image_url) {
+        if (portfolio.image_url.startsWith('portfolio-image-')) {
+          const image = await getPortfolioImageWithFallback(portfolio.image_url, portfolio.category, portfolio.title);
+          setPortfolioImage(image);
+          setOgImage(image);
+        } else {
+          setPortfolioImage(portfolio.image_url);
+          setOgImage(portfolio.image_url);
+        }
+      } else {
+        setOgImage(`${getCurrentDomain()}/public/logo.png`);
+      }
+    };
+
+    loadPortfolioImage();
+  }, [portfolio]);
 
   // Scroll to top when portfolio loads
   useEffect(() => {
@@ -64,58 +126,16 @@ const PortfolioDetail = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  const loadPortfolio = async () => {
+  const loadRelatedPortfolios = async (currentPortfolio: Gallery) => {
     try {
-      setLoading(true);
-      setError("");
-      
-      if (!slug) {
-        setError("Slug portofolio tidak ditemukan");
-        return;
-      }
-
-      const portfolioData = await getPortfolioBySlug(slug);
-      if (portfolioData) {
-        setPortfolio(portfolioData);
-        await loadRelatedPortfolios(portfolioData);
-        await loadFeaturedPortfolios();
-      } else {
-        setError("Portofolio tidak ditemukan");
-      }
-    } catch (error) {
-      console.error("Error loading portfolio:", error);
-      setError("Terjadi kesalahan saat memuat portofolio");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadRelatedPortfolios = async (currentPortfolio: Portfolio) => {
-    try {
-      const allPortfolios = await getPublishedPortfolios();
+      const allPortfolios = await getPublishedGalleries();
       const related = allPortfolios
         .filter(p => p.id !== currentPortfolio.id)
-        .filter(p => 
-          p.category === currentPortfolio.category ||
-          p.technologies.some(tech => 
-            currentPortfolio.technologies.includes(tech)
-          )
-        )
+        .filter(p => p.category === currentPortfolio.category)
         .slice(0, 3);
       setRelatedPortfolios(related);
     } catch (error) {
       console.error("Error loading related portfolios:", error);
-    }
-  };
-
-  const loadFeaturedPortfolios = async () => {
-    try {
-      const featured = await getFeaturedPortfolios(6);
-      // Exclude current portfolio from featured portfolios
-      const filteredFeatured = featured.filter(p => p.id !== portfolio?.id);
-      setFeaturedPortfolios(filteredFeatured);
-    } catch (error) {
-      console.error("Error loading featured portfolios:", error);
     }
   };
 
@@ -154,10 +174,10 @@ const PortfolioDetail = () => {
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={() => navigate('/portfolio')}
+                onClick={() => navigate('/')}
                 className="h-auto p-0 hover:text-primary whitespace-nowrap"
               >
-                Portofolio
+                Dokumentasi
               </Button>
               <ChevronRight className="h-4 w-4 flex-shrink-0" />
               <span className="text-primary font-medium">Memuat...</span>
@@ -166,7 +186,7 @@ const PortfolioDetail = () => {
           
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Memuat portofolio...</p>
+            <p className="mt-4 text-muted-foreground">Memuat dokumentasi...</p>
           </div>
         </div>
         <Footer />
@@ -195,10 +215,10 @@ const PortfolioDetail = () => {
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={() => navigate('/portfolio')}
+                onClick={() => navigate('/')}
                 className="h-auto p-0 hover:text-primary whitespace-nowrap"
               >
-                Portofolio
+                Dokumentasi
               </Button>
               <ChevronRight className="h-4 w-4 flex-shrink-0" />
               <span className="text-primary font-medium">Error</span>
@@ -207,10 +227,10 @@ const PortfolioDetail = () => {
           
           <div className="text-center py-12">
             <h1 className="text-2xl font-bold text-secondary mb-4">
-              {error || "Portofolio tidak ditemukan"}
+              {error || "Dokumentasi tidak ditemukan"}
             </h1>
             <p className="text-muted-foreground mb-6">
-              Portofolio yang Anda cari tidak dapat ditemukan atau telah dihapus.
+              Dokumentasi yang Anda cari tidak dapat ditemukan atau telah dihapus.
             </p>
             <Button onClick={() => navigate('/')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -227,67 +247,37 @@ const PortfolioDetail = () => {
     <div className="min-h-screen bg-gradient-to-br from-background to-muted">
       <Helmet>
         {/* Basic Meta Tags */}
-        <title>{portfolio.title} | Idea Digital Creative</title>
+        <title>{portfolio.title} | Official Website Dr. Ir. H. AGUS AMBO DJIWA, M.P.</title>
         <meta name="description" content={portfolio.description} />
-        <meta name="keywords" content={`${portfolio.category}, ${portfolio.technologies.join(', ')}, portofolio, proyek`} />
+        <meta name="keywords" content={`${portfolio.category}, ${portfolio.photographer}, dokumentasi, kegiatan, DPR, parlemen, aspirasi`} />
         
         {/* Open Graph Meta Tags */}
         <meta property="og:title" content={portfolio.title} />
         <meta property="og:description" content={portfolio.description} />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content={`https://ideadigiralcreative.com/portfolio/${portfolio.slug}`} />
-        <meta property="og:site_name" content="Idea Digital Creative" />
+            <meta property="og:url" content={`${getCurrentDomain()}/dokumentasi/${portfolio.slug}`} />
+        <meta property="og:site_name" content="Official Website Dr. Ir. H. AGUS AMBO DJIWA, M.P." />
         <meta property="og:locale" content="id_ID" />
         
         {/* Open Graph Image */}
-        <meta property="og:image" content={(() => {
-          if (portfolio.featured_image) {
-            if (portfolio.featured_image.startsWith('portfolio-image-')) {
-              return getPortfolioImageWithFallback(portfolio.featured_image, portfolio.category, portfolio.title);
-            } else {
-              return portfolio.featured_image;
-            }
-          } else {
-            return 'https://ideadigiralcreative.com/public/logo.png';
-          }
-        })()} />
+        <meta property="og:image" content={ogImage} />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:image:alt" content={portfolio.title} />
         <meta property="og:image:type" content="image/jpeg" />
-        <meta property="og:image:secure_url" content={(() => {
-          if (portfolio.featured_image) {
-            if (portfolio.featured_image.startsWith('portfolio-image-')) {
-              return getPortfolioImageWithFallback(portfolio.featured_image, portfolio.category, portfolio.title);
-            } else {
-              return portfolio.featured_image;
-            }
-          } else {
-            return 'https://ideadigiralcreative.com/public/logo.png';
-          }
-        })()} />
+        <meta property="og:image:secure_url" content={ogImage} />
         
         {/* Twitter Card Meta Tags */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={portfolio.title} />
         <meta name="twitter:description" content={portfolio.description} />
-        <meta name="twitter:image" content={(() => {
-          if (portfolio.featured_image) {
-            if (portfolio.featured_image.startsWith('portfolio-image-')) {
-              return getPortfolioImageWithFallback(portfolio.featured_image, portfolio.category, portfolio.title);
-            } else {
-              return portfolio.featured_image;
-            }
-          } else {
-            return 'https://ideadigiralcreative.com/public/logo.png';
-          }
-        })()} />
+        <meta name="twitter:image" content={ogImage} />
         <meta name="twitter:site" content="@Komunitas Lombok Pasangkayu" />
         <meta name="twitter:creator" content="@Komunitas Lombok Pasangkayu" />
         
         {/* Additional Meta Tags */}
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href={`https://ideadigiralcreative.com/portfolio/${portfolio.slug}`} />
+            <link rel="canonical" href={`${getCurrentDomain()}/dokumentasi/${portfolio.slug}`} />
       </Helmet>
       <Header onLogoClick={() => navigate('/')} />
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -307,10 +297,10 @@ const PortfolioDetail = () => {
             <Button 
               variant="ghost" 
               size="sm"
-              onClick={() => navigate('/portfolio')}
+              onClick={() => navigate('/')}
               className="h-auto p-0 hover:text-primary whitespace-nowrap"
             >
-              Portofolio
+              Dokumentasi
             </Button>
             <ChevronRight className="h-4 w-4 flex-shrink-0" />
             <span className="text-primary font-medium truncate max-w-[150px] sm:max-w-[200px]">
@@ -327,17 +317,7 @@ const PortfolioDetail = () => {
               {/* Featured Image */}
               <div className="w-full h-64 md:h-96 overflow-hidden relative">
                 <img
-                  src={(() => {
-                    if (portfolio.featured_image) {
-                      if (portfolio.featured_image.startsWith('portfolio-image-')) {
-                        return getPortfolioImageWithFallback(portfolio.featured_image, portfolio.category, portfolio.title);
-                      } else {
-                        return portfolio.featured_image;
-                      }
-                    } else {
-                      return getPortfolioImageWithFallback('', portfolio.category, portfolio.title);
-                    }
-                  })()}
+                  src={portfolioImage}
                   alt={portfolio.title}
                   className="w-full h-full object-cover"
                 />
@@ -364,7 +344,7 @@ const PortfolioDetail = () => {
                 <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-6">
                   <div className="flex items-center gap-2 max-w-[200px]">
                     <User className="h-4 w-4 flex-shrink-0" />
-                    <span className="truncate">Client: {portfolio.client}</span>
+                    <span className="truncate">Lokasi: {portfolio.location}</span>
                   </div>
                   <div className="flex items-center gap-2 max-w-[150px]">
                     <Tag className="h-4 w-4 flex-shrink-0" />
@@ -380,7 +360,7 @@ const PortfolioDetail = () => {
                 <div className="prose prose-lg max-w-none mb-8">
                   {/* Render HTML content safely */}
                   <div 
-                    dangerouslySetInnerHTML={{ __html: portfolio.description }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHTML(portfolio.description) }}
                     className="text-gray-800 leading-relaxed portfolio-description"
                   />
                   <style>
@@ -476,46 +456,27 @@ const PortfolioDetail = () => {
                   </style>
                 </div>
 
-                {/* Technologies */}
-                {portfolio.technologies && portfolio.technologies.length > 0 && (
-                  <div className="mb-8">
-                    <h3 className="text-lg font-semibold text-secondary mb-4">Teknologi yang Digunakan</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {portfolio.technologies.map((tech, index) => (
-                        <Badge 
-                          key={index} 
-                          variant="secondary" 
-                          className="px-3 py-2 text-sm bg-red-100 text-red-700 border-red-200 hover:bg-red-200 hover:text-red-800 transition-colors"
-                        >
-                          {tech}
-                        </Badge>
-                      ))}
+                {/* Gallery Info */}
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold text-secondary mb-4">Informasi Dokumentasi</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center gap-3">
+                      <Tag className="h-5 w-5 text-primary" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">Kategori</p>
+                        <p className="font-medium">{portfolio.category}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <User className="h-5 w-5 text-primary" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">Pencatat</p>
+                        <p className="font-medium">{portfolio.photographer}</p>
+                      </div>
                     </div>
                   </div>
-                )}
-
-                {/* Action Buttons */}
-                <div className="flex flex-wrap items-center gap-3 mb-8">
-                  {portfolio.project_url && (
-                    <Button 
-                      onClick={() => window.open(portfolio.project_url, '_blank')}
-                      className="flex items-center gap-2"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                      Demo
-                    </Button>
-                  )}
-                  {portfolio.github_url && (
-                    <Button 
-                      variant="outline"
-                      onClick={() => window.open(portfolio.github_url, '_blank')}
-                      className="flex items-center gap-2"
-                    >
-                      <Github className="h-4 w-4" />
-                      Code
-                    </Button>
-                  )}
                 </div>
+
 
                 <Separator className="mb-8" />
               </div>
@@ -531,7 +492,7 @@ const PortfolioDetail = () => {
                   <div className="flex items-center gap-2 mb-6">
                     <Star className="h-5 w-5 text-yellow-500" />
                     <h3 className="text-lg font-bold text-secondary">
-                      Portofolio Unggulan
+                      Dokumentasi Unggulan
                     </h3>
                   </div>
                   
@@ -541,23 +502,13 @@ const PortfolioDetail = () => {
                         <div 
                           key={featuredPortfolio.id} 
                           className="group cursor-pointer"
-                          onClick={() => navigate(`/portfolio/${featuredPortfolio.slug}`)}
+                          onClick={() => navigate(`/dokumentasi/${featuredPortfolio.slug}`)}
                         >
                           <div className="flex items-start gap-3">
                             {/* Thumbnail */}
                             <div className="flex-shrink-0 w-12 h-12 overflow-hidden rounded-lg">
                               <img
-                                src={(() => {
-                                  if (featuredPortfolio.featured_image) {
-                                    if (featuredPortfolio.featured_image.startsWith('portfolio-image-')) {
-                                      return getPortfolioImageWithFallback(featuredPortfolio.featured_image, featuredPortfolio.category, featuredPortfolio.title);
-                                    } else {
-                                      return featuredPortfolio.featured_image;
-                                    }
-                                  } else {
-                                    return getPortfolioImageWithFallback('', featuredPortfolio.category, featuredPortfolio.title);
-                                  }
-                                })()}
+                                src={featuredPortfolio.image_url || `${getCurrentDomain()}/public/logo.png`}
                                 alt={featuredPortfolio.title}
                                 className="w-full h-full object-cover"
                               />
@@ -597,25 +548,15 @@ const PortfolioDetail = () => {
         {relatedPortfolios.length > 0 && (
           <div className="mt-12">
             <h2 className="text-2xl font-bold text-secondary mb-6">
-              Portofolio Terkait
+              Dokumentasi Terkait
             </h2>
             <div className="grid md:grid-cols-3 gap-6">
               {relatedPortfolios.map((relatedPortfolio) => (
-                <Card key={relatedPortfolio.id} className="group hover:shadow-lg transition-all duration-300 bg-white/80 backdrop-blur-sm border-white/20 cursor-pointer" onClick={() => navigate(`/portfolio/${relatedPortfolio.slug}`)}>
+                <Card key={relatedPortfolio.id} className="group hover:shadow-lg transition-all duration-300 bg-white/80 backdrop-blur-sm border-white/20 cursor-pointer" onClick={() => navigate(`/dokumentasi/${relatedPortfolio.slug}`)}>
                   {/* Thumbnail for related portfolios */}
                   <div className="aspect-[3/2] overflow-hidden relative">
                     <img
-                      src={(() => {
-                        if (relatedPortfolio.featured_image) {
-                          if (relatedPortfolio.featured_image.startsWith('portfolio-image-')) {
-                            return getPortfolioImageWithFallback(relatedPortfolio.featured_image, relatedPortfolio.category, relatedPortfolio.title);
-                          } else {
-                            return relatedPortfolio.featured_image;
-                          }
-                        } else {
-                          return getPortfolioImageWithFallback('', relatedPortfolio.category, relatedPortfolio.title);
-                        }
-                      })()}
+                      src={relatedPortfolio.image_url || `${getCurrentDomain()}/public/logo.png`}
                       alt={relatedPortfolio.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
@@ -631,7 +572,7 @@ const PortfolioDetail = () => {
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span className="flex items-center gap-1 max-w-[100px]">
                         <User className="h-3 w-3 flex-shrink-0" />
-                        <span className="truncate">{relatedPortfolio.client}</span>
+                        <span className="truncate">{relatedPortfolio.location}</span>
                       </span>
                       <span className="flex items-center gap-1 max-w-[100px]">
                         <Tag className="h-3 w-3 flex-shrink-0" />

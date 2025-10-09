@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { getPublishedPosts } from "@/lib/blogService";
 import { BlogPost } from "@/lib/supabase";
+import { getCurrentDomain } from "@/lib/urlUtils";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -33,14 +34,6 @@ const Blog = () => {
 
 
 
-  useEffect(() => {
-    loadPosts();
-  }, []);
-
-  useEffect(() => {
-    filterAndSortPosts();
-  }, [posts, searchTerm, selectedTag, sortBy]);
-
   const loadPosts = async () => {
     try {
       setLoading(true);
@@ -53,7 +46,7 @@ const Blog = () => {
     }
   };
 
-  const filterAndSortPosts = () => {
+  const filterAndSortPosts = useCallback(() => {
     let filtered = [...posts];
 
     // Filter by search term
@@ -91,7 +84,15 @@ const Blog = () => {
 
     setFilteredPosts(filtered);
     setCurrentPage(1); // Reset to first page when filtering
-  };
+  }, [posts, searchTerm, selectedTag, sortBy]);
+
+  useEffect(() => {
+    loadPosts();
+  }, []);
+
+  useEffect(() => {
+    filterAndSortPosts();
+  }, [filterAndSortPosts]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('id-ID', {
@@ -149,37 +150,37 @@ const Blog = () => {
     <div className="min-h-screen bg-gradient-to-br from-background to-muted">
       <Helmet>
         {/* Basic Meta Tags */}
-        <title>Blog & Artikel | Idea Digital Creative</title>
-        <meta name="description" content="Temukan artikel menarik seputar teknologi, bisnis, dan tips pengembangan website dari Idea Digital Creative" />
-        <meta name="keywords" content="blog, artikel, teknologi, bisnis, website, development, tips" />
+        <title>Berita & Aspirasi | Official Website Dr. Ir. H. AGUS AMBO DJIWA, M.P.</title>
+        <meta name="description" content="Temukan berita terkini, aspirasi masyarakat, dan kegiatan parlemen dari Dr. Ir. H. AGUS AMBO DJIWA, M.P. - Anggota DPR RI" />
+        <meta name="keywords" content="DPR, parlemen, aspirasi, berita, kegiatan, politik, demokrasi, masyarakat" />
         
         {/* Open Graph Meta Tags */}
-        <meta property="og:title" content="Blog & Artikel | Idea Digital Creative" />
-        <meta property="og:description" content="Temukan artikel menarik seputar teknologi, bisnis, dan tips pengembangan website dari Idea Digital Creative" />
+        <meta property="og:title" content="Berita & Aspirasi | Official Website Dr. Ir. H. AGUS AMBO DJIWA, M.P." />
+        <meta property="og:description" content="Temukan berita terkini, aspirasi masyarakat, dan kegiatan parlemen dari Dr. Ir. H. AGUS AMBO DJIWA, M.P. - Anggota DPR RI" />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://ideadigiralcreative.com/blog" />
-        <meta property="og:site_name" content="Idea Digital Creative" />
+        <meta property="og:url" content={`${getCurrentDomain()}/blog`} />
+        <meta property="og:site_name" content="Official Website Dr. Ir. H. AGUS AMBO DJIWA, M.P." />
         <meta property="og:locale" content="id_ID" />
         
         {/* Open Graph Image - Default blog image */}
-        <meta property="og:image" content="https://ideadigiralcreative.com/public/logo.png" />
+        <meta property="og:image" content={`${getCurrentDomain()}/public/logo.png`} />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content="Blog & Artikel Idea Digital Creative" />
+        <meta property="og:image:alt" content="Blog & Artikel Official Website Dr. Ir. H. AGUS AMBO DJIWA, M.P." />
         <meta property="og:image:type" content="image/jpeg" />
-        <meta property="og:image:secure_url" content="https://ideadigiralcreative.com/public/logo.png" />
+        <meta property="og:image:secure_url" content={`${getCurrentDomain()}/public/logo.png`} />
         
         {/* Twitter Card Meta Tags */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Blog & Artikel | Idea Digital Creative" />
-        <meta name="twitter:description" content="Temukan artikel menarik seputar teknologi, bisnis, dan tips pengembangan website dari Idea Digital Creative" />
-        <meta name="twitter:image" content="https://ideadigiralcreative.com/public/logo.png" />
+        <meta name="twitter:title" content="Berita & Aspirasi | Official Website Dr. Ir. H. AGUS AMBO DJIWA, M.P." />
+        <meta name="twitter:description" content="Temukan berita terkini, aspirasi masyarakat, dan kegiatan parlemen dari Dr. Ir. H. AGUS AMBO DJIWA, M.P. - Anggota DPR RI" />
+        <meta name="twitter:image" content={`${getCurrentDomain()}/public/logo.png`} />
         <meta name="twitter:site" content="@Komunitas Lombok Pasangkayu" />
         <meta name="twitter:creator" content="@Komunitas Lombok Pasangkayu" />
         
         {/* Additional Meta Tags */}
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://ideadigiralcreative.com/blog" />
+        <link rel="canonical" href={`${getCurrentDomain()}/blog`} />
       </Helmet>
       <Header onLogoClick={() => navigate('/')} />
       
@@ -196,10 +197,10 @@ const Blog = () => {
           </Button>
           
           <h1 className="text-4xl md:text-5xl font-bold text-secondary mb-4">
-            Blog & Artikel
+            Berita & Aspirasi
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Temukan artikel menarik seputar teknologi, bisnis, dan tips pengembangan website
+            Temukan berita terkini, aspirasi masyarakat, dan kegiatan parlemen dari Dr. Ir. H. AGUS AMBO DJIWA, M.P.
           </p>
         </div>
 
@@ -211,7 +212,7 @@ const Blog = () => {
                <div className="relative">
                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                  <Input
-                   placeholder="Cari artikel..."
+                   placeholder="Cari berita atau aspirasi..."
                    value={searchTerm}
                    onChange={(e) => setSearchTerm(e.target.value)}
                    className="pl-10"
@@ -223,12 +224,12 @@ const Blog = () => {
 
 
 
-                 {/* Artikel Terbaru Section */}
+                 {/* Berita Terbaru Section */}
          <div className="mb-8">
            <div className="flex items-center justify-between mb-6">
              <div className="flex items-center gap-4">
                <h2 className="text-2xl font-bold text-secondary">
-                 Artikel Terbaru
+                 Berita Terbaru
                </h2>
                {/* Filter Indicator */}
                {(selectedTag !== "all" || searchTerm) && (
@@ -331,7 +332,7 @@ const Blog = () => {
             <div className="text-center py-12">
               <Search className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
               <h3 className="text-lg font-semibold text-secondary mb-2">
-                Tidak ada artikel ditemukan
+                Tidak ada berita ditemukan
               </h3>
               <p className="text-muted-foreground">
                 Coba ubah kata kunci pencarian atau filter yang Anda gunakan.

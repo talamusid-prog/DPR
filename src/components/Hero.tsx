@@ -6,7 +6,7 @@ import "./Hero.css";
 
 const Hero = () => {
   return (
-    <section id="home" className="pt-4 lg:pt-8 lg:mt-0 pb-56 sm:pb-48 lg:pb-24 min-h-[85vh] sm:min-h-[75vh] lg:min-h-auto bg-gradient-to-br from-red-600 to-red-800 relative overflow-hidden">
+    <section id="home" className="pt-4 lg:pt-8 lg:mt-0 pb-56 sm:pb-48 lg:pb-24 min-h-[85vh] sm:min-h-[75vh] lg:min-h-auto gradient-primary relative overflow-hidden">
       {/* Grid lines background */}
       <div className="grid-background" />
       

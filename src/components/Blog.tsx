@@ -214,12 +214,12 @@ const Blog = () => {
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       {/* Category Tag */}
-                              <div className="inline-block px-2 py-1 bg-red-600 text-white text-xs font-medium rounded mb-2">
+                              <div className="inline-block px-2 py-1 bg-primary text-white text-xs font-medium rounded mb-2">
                         BERITA TERBARU
                       </div>
                       
                       {/* Title */}
-                      <h4 className="text-sm font-semibold text-gray-800 group-hover:text-red-600 transition-colors line-clamp-2 mb-1">
+                      <h4 className="text-sm font-semibold text-gray-800 group-hover:text-primary transition-colors line-clamp-2 mb-1">
                         {post.title}
                       </h4>
                       
@@ -245,7 +245,7 @@ const Blog = () => {
               onClick={() => navigate('/blog')}
               variant="outline" 
               size="lg"
-                    className="border-red-600 text-red-600 hover:bg-red-600 hover:text-white transition-colors px-8 py-3 rounded-lg flex items-center gap-2 mx-auto"
+                    className="border-primary text-primary hover:bg-primary hover:text-white transition-colors px-8 py-3 rounded-lg flex items-center gap-2 mx-auto"
             >
             Lihat Semua Berita
             <ArrowRight className="w-4 h-4" />

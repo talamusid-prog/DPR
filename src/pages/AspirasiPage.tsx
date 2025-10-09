@@ -5,6 +5,8 @@ import { MessageSquare, Send, ArrowLeft, User, Mail, FileText, Tag } from "lucid
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { createAspirasi } from "@/lib/aspirasiService";
+import { showSuccess, showError, showWarning } from "@/lib/sweetAlert";
 
 const AspirasiPage = () => {
   const [formData, setFormData] = useState({
@@ -22,11 +24,30 @@ const AspirasiPage = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log("Form submitted:", formData);
-    // You can add API call or other logic here
+    if (!formData.nama.trim() || !formData.email.trim() || !formData.kategori.trim() || !formData.aspirasi.trim()) {
+      showWarning("Semua field wajib diisi.");
+      return;
+    }
+
+    try {
+      const ok = await createAspirasi({
+        nama: formData.nama.trim(),
+        email: formData.email.trim(),
+        kategori: formData.kategori.trim(),
+        aspirasi: formData.aspirasi.trim(),
+      });
+      if (ok) {
+        showSuccess("Aspirasi berhasil dikirim. Terima kasih!");
+        setFormData({ nama: "", email: "", kategori: "", aspirasi: "" });
+      } else {
+        showError("Gagal mengirim aspirasi. Coba lagi nanti.");
+      }
+    } catch (err) {
+      console.error(err);
+      showError("Terjadi kesalahan saat mengirim aspirasi.");
+    }
   };
 
   return (

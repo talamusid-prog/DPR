@@ -1,44 +1,59 @@
 import { MessageSquare, Calendar, Users, ArrowRight, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { listAspirasi } from "@/lib/aspirasiService";
+
+type UpdateItem = { icon: JSX.Element; title: string; description: string; date: string; status: string };
 
 const UpdateAspirasi = () => {
-  const aspirasiUpdates = [
-    {
-      icon: <MessageSquare className="w-8 h-8" />,
-      title: "Aspirasi Pendidikan",
-      description: "Pembangunan 5 Sekolah Baru di Pasangkayu",
-      date: "15 Des 2024",
-      status: "Dalam Proses"
-    },
-    {
-      icon: <Users className="w-8 h-8" />,
-      title: "Aspirasi Kesehatan",
-      description: "Renovasi Puskesmas dan Penambahan Ambulans",
-      date: "12 Des 2024",
-      status: "Disetujui"
-    },
-    {
-      icon: <Calendar className="w-8 h-8" />,
-      title: "Aspirasi Infrastruktur",
-      description: "Pembangunan Jembatan Penghubung Desa",
-      date: "10 Des 2024",
-      status: "Selesai"
-    },
-    {
-      icon: <MessageSquare className="w-8 h-8" />,
-      title: "Aspirasi UMKM",
-      description: "Program Pelatihan dan Modal Usaha",
-      date: "8 Des 2024",
-      status: "Dalam Proses"
-    },
-    {
-      icon: <Users className="w-8 h-8" />,
-      title: "Aspirasi Lingkungan",
-      description: "Program Penghijauan dan Pengelolaan Sampah",
-      date: "5 Des 2024",
-      status: "Disetujui"
-    }
-  ];
+  const [items, setItems] = useState<UpdateItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      const data = await listAspirasi();
+      if (!data || data.length === 0) {
+        setItems([]);
+        setLoading(false);
+        return;
+      }
+      const iconByKategori = (kategori?: string) => {
+        const k = (kategori || '').toLowerCase();
+        if (k.includes('kesehatan')) return <Users className="w-8 h-8" />;
+        if (k.includes('infrastruktur')) return <Calendar className="w-8 h-8" />;
+        if (k.includes('umkm') || k.includes('ekonomi')) return <MessageSquare className="w-8 h-8" />;
+        if (k.includes('lingkungan')) return <Users className="w-8 h-8" />;
+        if (k.includes('pendidikan')) return <MessageSquare className="w-8 h-8" />;
+        return <MessageSquare className="w-8 h-8" />;
+      };
+      const statusLabel = (s?: string) => {
+        if (s === 'selesai') return 'Selesai';
+        if (s === 'diproses') return 'Dalam Proses';
+        if (s === 'baru') return 'Baru';
+        return 'Dalam Proses';
+      };
+      const toDate = (iso?: string) => {
+        try {
+          return new Date(iso || '').toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        } catch {
+          return '';
+        }
+      };
+      const mapped: UpdateItem[] = [...data]
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 5)
+        .map((a) => ({
+          icon: iconByKategori(a.kategori),
+          title: `Aspirasi ${a.kategori ? a.kategori.charAt(0).toUpperCase() + a.kategori.slice(1) : 'Masyarakat'}`,
+          description: (a.aspirasi || '').slice(0, 80) + ((a.aspirasi || '').length > 80 ? '…' : ''),
+          date: toDate(a.created_at),
+          status: statusLabel(a.status)
+        }));
+      setItems(mapped);
+      setLoading(false);
+    })();
+  }, []);
 
   return (
     <section className="relative py-16">
@@ -104,9 +119,12 @@ const UpdateAspirasi = () => {
 
                                       {/* Right Panel - Aspirasi Updates Grid */}
               <div className="space-y-3 lg:space-y-4 flex flex-col justify-center">
+                {loading && (
+                  <div className="text-center text-sm text-gray-500">Memuat aspirasi...</div>
+                )}
                                  {/* Top Row - 3 Cards */}
-                 <div className="grid grid-cols-3 gap-1 lg:gap-2">
-                   {aspirasiUpdates.slice(0, 3).map((update, index) => (
+                <div className="grid grid-cols-3 gap-1 lg:gap-2">
+                  {(items.slice(0, 3)).map((update, index) => (
                      <div key={index} className="bg-gray-50 rounded-lg px-2 py-2 lg:py-2 text-center border border-gray-200 hover:border-primary/30 hover:shadow-md transition-all duration-300">
                        <div className="flex justify-center mb-1">
                          <div className="text-primary">
@@ -137,13 +155,16 @@ const UpdateAspirasi = () => {
                  </div>
                 
                                  {/* Bottom Row - 2 Cards */}
-                 <div className="grid grid-cols-2 gap-2 lg:gap-4">
-                   {aspirasiUpdates.slice(3, 5).map((update, index) => (
+                <div className="grid grid-cols-2 gap-2 lg:gap-4">
+                  {(items.slice(3, 5)).map((update, index) => (
                      <div key={index + 3} className="bg-gray-50 rounded-xl px-4 py-2 lg:py-3 text-center border border-gray-200 hover:border-primary/30 hover:shadow-md transition-all duration-300">
                        <div className="flex justify-center mb-1">
                          <div className="text-primary">
                            {update.icon}
                          </div>
+                {!loading && items.length === 0 && (
+                  <div className="text-center text-sm text-gray-500">Belum ada aspirasi.</div>
+                )}
                        </div>
                        <h4 className="font-semibold text-gray-700 text-sm lg:text-base mb-1">
                          {update.title}

@@ -1,34 +1,64 @@
 import { useState, useEffect } from "react";
 import AdminLogin from "@/components/admin/AdminLogin";
 import AdminDashboard from "@/components/admin/AdminDashboard";
+import { authService, AuthUser } from "@/lib/auth";
 
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [user, setUser] = useState<AuthUser | null>(null);
 
-  // Check if user is already logged in (from localStorage)
+  // Check if user is already logged in
   useEffect(() => {
-    const adminToken = localStorage.getItem("adminToken");
-    if (adminToken) {
-      setIsAuthenticated(true);
-    }
+    const checkAuth = async () => {
+      setLoading(true);
+      try {
+        const currentUser = await authService.getCurrentUser();
+        if (currentUser && currentUser.role === 'admin') {
+          setUser(currentUser);
+          setIsAuthenticated(true);
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+
+    // Listen to auth changes
+    const { data: { subscription } } = authService.onAuthStateChange((user) => {
+      if (user && user.role === 'admin') {
+        setUser(user);
+        setIsAuthenticated(true);
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const handleLogin = async (username: string, password: string) => {
+  const handleLogin = async (email: string, password: string) => {
     setLoading(true);
     setError("");
 
     try {
-      // Simple authentication (for demo purposes)
-      // In production, this should be replaced with proper authentication
-      if (username === "admin" && password === "admin123") {
-        // Store authentication token
-        localStorage.setItem("adminToken", "demo-token");
-        localStorage.setItem("adminUser", username);
+      const { user: authUser, error } = await authService.login({
+        email,
+        password
+      });
+
+      if (error) {
+        setError(error);
+      } else if (authUser && authUser.role === 'admin') {
+        setUser(authUser);
         setIsAuthenticated(true);
       } else {
-        setError("Username atau password salah!");
+        setError("Anda tidak memiliki akses admin!");
       }
     } catch (error) {
       setError("Terjadi kesalahan saat login");
@@ -37,10 +67,17 @@ const Admin = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("adminToken");
-    localStorage.removeItem("adminUser");
-    setIsAuthenticated(false);
+  const handleLogout = async () => {
+    setLoading(true);
+    try {
+      await authService.logout();
+      setUser(null);
+      setIsAuthenticated(false);
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (isAuthenticated) {
