@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { BookOpen, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
-import { getPublishedPosts } from "@/lib/blogService";
+import { getPublishedPosts, getBlogImageUrl } from "@/lib/blogService";
 import { BlogPost } from "@/lib/supabase";
 
 const Blog = () => {
@@ -189,7 +189,7 @@ const Blog = () => {
                         onClick={() => navigate(`/blog/${post.slug}`)}
                       >
                               <img
-                          src={post.featured_image || `/berita${index + 1}.jpg`}
+                          src={post.featured_image ? getBlogImageUrl(post.featured_image, { width: 400, height: 300, quality: 80 }) : `/berita${index + 1}.jpg`}
                                 alt={post.title}
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                 loading="lazy"
@@ -259,7 +259,7 @@ const Blog = () => {
                     {/* Thumbnail */}
                     <div className="flex-shrink-0">
                       <img
-                        src={post.featured_image || `/berita${index + 2}.jpg`}
+                        src={post.featured_image ? getBlogImageUrl(post.featured_image, { width: 80, height: 80, quality: 80 }) : `/berita${index + 2}.jpg`}
                         alt={post.title}
                         className="w-20 h-20 object-cover rounded-lg"
                       />

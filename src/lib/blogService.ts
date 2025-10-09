@@ -1,4 +1,5 @@
 import { supabase, BlogPost, CreateBlogPost } from './supabase'
+import { uploadImage, getOptimizedImageUrl, UploadResult } from './imageUploadService'
 
 // Cache untuk menyimpan data artikel
 let postsCache: BlogPost[] | null = null
@@ -52,6 +53,50 @@ export const clearPostsCache = () => {
   relatedPostsCache.clear()
   cacheTimestamp = 0
   popularCacheTimestamp = 0
+}
+
+// Fungsi untuk upload gambar artikel
+export const uploadBlogImage = async (file: File): Promise<UploadResult> => {
+  try {
+    console.log('📤 Uploading blog image:', {
+      name: file.name,
+      size: file.size,
+      type: file.type
+    })
+
+    const result = await uploadImage(file, {
+      bucket: 'blog-images',
+      folder: 'articles',
+      maxSize: 5 * 1024 * 1024, // 5MB
+      allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+    })
+
+    if (result.success && result.url) {
+      console.log('✅ Blog image uploaded successfully:', result.url)
+    } else {
+      console.error('❌ Blog image upload failed:', result.error)
+    }
+
+    return result
+  } catch (error) {
+    console.error('❌ Upload blog image error:', error)
+    return {
+      success: false,
+      error: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+    }
+  }
+}
+
+// Fungsi untuk mendapatkan URL gambar yang dioptimasi
+export const getBlogImageUrl = (imagePath: string, options?: {
+  width?: number
+  height?: number
+  quality?: number
+}): string => {
+  return getOptimizedImageUrl(imagePath, {
+    ...options,
+    format: 'webp'
+  })
 }
 
 // Fungsi untuk mendapatkan artikel populer dengan cache

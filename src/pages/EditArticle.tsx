@@ -11,23 +11,21 @@ import {
   Save, 
   Eye,
   EyeOff,
-  Upload,
   X,
-  Plus,
-  Loader2
+  Plus
 } from "lucide-react";
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import type { Editor } from '@ckeditor/ckeditor5-core';
 import { getPostBySlugAdmin, updatePostBySlug } from "@/lib/blogService";
 import { BlogPost } from "@/lib/supabase";
+import ImageUpload from "@/components/ImageUpload";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 const EditArticle = () => {
   const navigate = useNavigate();
   const { slug } = useParams<{ slug: string }>();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState({
     title: "",
@@ -39,7 +37,6 @@ const EditArticle = () => {
   });
   
   const [newTag, setNewTag] = useState("");
-  const [isUploading, setIsUploading] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -150,28 +147,20 @@ const EditArticle = () => {
     }
   };
 
-  // Handle file upload
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  // Handle image upload from ImageUpload component
+  const handleImageUploaded = (url: string) => {
+    setFormData(prev => ({
+      ...prev,
+      featured_image: url
+    }));
+    setError(''); // Clear any previous errors
+  };
 
-    setIsUploading(true);
-    
-    try {
-      // Simulate file upload - in real app, upload to cloud storage
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setFormData(prev => ({
-          ...prev,
-          featured_image: e.target?.result as string
-        }));
-        setIsUploading(false);
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      setIsUploading(false);
-    }
+  const handleImageRemoved = () => {
+    setFormData(prev => ({
+      ...prev,
+      featured_image: ''
+    }));
   };
 
   // Add tag
@@ -239,7 +228,7 @@ const EditArticle = () => {
         <Header onLogoClick={() => navigate('/')} />
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="text-center py-12">
-            <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4" />
+            <div className="h-12 w-12 animate-spin mx-auto mb-4 border-4 border-primary border-t-transparent rounded-full" />
             <p className="text-muted-foreground">Memuat artikel...</p>
           </div>
         </div>
@@ -303,10 +292,10 @@ const EditArticle = () => {
             <Button
               onClick={handleSubmit}
               className="flex items-center gap-2"
-              disabled={isUploading || saving}
+              disabled={saving}
             >
               {saving ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <div className="h-4 w-4 animate-spin border-2 border-white border-t-transparent rounded-full" />
               ) : (
                 <Save className="h-4 w-4" />
               )}
@@ -548,52 +537,11 @@ const EditArticle = () => {
                 <CardTitle className="text-lg">Gambar Utama</CardTitle>
               </CardHeader>
               <CardContent className="p-6">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                  className="hidden"
+                <ImageUpload
+                  onImageUploaded={handleImageUploaded}
+                  currentImage={formData.featured_image}
+                  onImageRemoved={handleImageRemoved}
                 />
-                
-                {formData.featured_image ? (
-                  <div className="space-y-4">
-                    <div className="aspect-video rounded-lg overflow-hidden border">
-                      <img
-                        src={formData.featured_image}
-                        alt="Featured"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setFormData(prev => ({ ...prev, featured_image: "" }))}
-                      className="w-full"
-                    >
-                      <X className="h-4 w-4 mr-2" />
-                      Hapus Gambar
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    variant="outline"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
-                    className="w-full h-32 border-dashed border-2 flex flex-col items-center justify-center gap-2"
-                  >
-                    {isUploading ? (
-                      <Loader2 className="h-6 w-6 animate-spin" />
-                    ) : (
-                      <>
-                        <Upload className="h-8 w-8 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">
-                          Upload Gambar
-                        </span>
-                      </>
-                    )}
-                  </Button>
-                )}
               </CardContent>
             </Card>
 

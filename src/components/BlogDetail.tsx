@@ -20,7 +20,7 @@ import {
   ChevronRight,
   Home
 } from "lucide-react";
-import { getPostBySlug, getPublishedPosts, getPopularPosts, getRelatedPosts } from "@/lib/blogService";
+import { getPostBySlug, getPublishedPosts, getPopularPosts, getRelatedPosts, getBlogImageUrl } from "@/lib/blogService";
 import { sanitizeHTML } from "@/lib/sanitize";
 import { BlogPost } from "@/lib/supabase";
 import { getCurrentDomain } from "@/lib/urlUtils";
@@ -489,7 +489,7 @@ const BlogDetail = () => {
               {post.featured_image ? (
                 <div className="w-full h-64 md:h-96 overflow-hidden relative">
                   <img
-                    src={post.featured_image}
+                    src={getBlogImageUrl(post.featured_image, { width: 800, height: 400, quality: 85 })}
                     alt={post.title}
                     className="w-full h-full object-cover"
                     loading="lazy"
@@ -724,7 +724,7 @@ const BlogDetail = () => {
                   {relatedPost.featured_image ? (
                     <div className="aspect-video overflow-hidden relative">
                       <img
-                        src={relatedPost.featured_image}
+                        src={getBlogImageUrl(relatedPost.featured_image, { width: 300, height: 200, quality: 80 })}
                         alt={relatedPost.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         loading="lazy"

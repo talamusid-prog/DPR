@@ -1,23 +1,29 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Menggunakan environment variables untuk keamanan
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+// Konfigurasi Supabase mandiri
+const supabaseUrl = 'https://superbase.zeabur.app'
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE'
 
-// Fallback values untuk development
-const fallbackUrl = 'https://paobhbmitoydoxnifijk.supabase.co'
-const fallbackKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhb2JoYm1pdG95ZG94bmlmaWprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MTQ5MjEsImV4cCI6MjA3NDk5MDkyMX0.vyfqLYjaFTvTB4M2A3FGLihV2bN28kroqID3K5ROTFM'
+// Environment variables sebagai fallback
+const envUrl = import.meta.env.VITE_SUPABASE_URL
+const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-// Gunakan fallback jika environment variables tidak tersedia
-const finalUrl = supabaseUrl || fallbackUrl
-const finalKey = supabaseAnonKey || fallbackKey
+// Gunakan environment variables jika tersedia, jika tidak gunakan konfigurasi mandiri
+const finalUrl = envUrl || supabaseUrl
+const finalKey = envKey || supabaseAnonKey
 
 // Validasi final values
 if (!finalUrl || !finalKey) {
-  throw new Error('Missing Supabase environment variables. Please check your .env file.')
+  throw new Error('Missing Supabase configuration.')
 }
 
 export const supabase = createClient(finalUrl, finalKey)
+
+// Service role key untuk operasi admin (jika diperlukan)
+export const supabaseServiceRoleKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJzZXJ2aWNlX3JvbGUiLAogICAgImlzcyI6ICJzdXBhYmFzZS1kZW1vIiwKICAgICJpYXQiOiAxNjQxNzY5MjAwLAogICAgImV4cCI6IDE3OTk1MzU2MDAKfQ.DaYlNEoUrrEn2Ig7tqibS-PHK5vgusbcbo7X36XVt4Q'
+
+// Client dengan service role untuk operasi admin
+export const supabaseAdmin = createClient(finalUrl, supabaseServiceRoleKey)
 
 // Types untuk Blog
 export interface BlogPost {
