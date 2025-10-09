@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Vercel Environment Variables</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug { background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Vercel Environment Variables</h1>
+    
+    <div class="debug">
+        <h3>Environment Variables Status:</h3>
+        <div id="env-status"></div>
+    </div>
+    
+    <div class="debug">
+        <h3>All Environment Variables:</h3>
+        <div id="all-env"></div>
+    </div>
+    
+    <div class="debug">
+        <h3>Supabase Connection Test:</h3>
+        <div id="supabase-test"></div>
+    </div>
+
+    <script>
+        // Debug environment variables
+        function debugEnvironment() {
+            const envStatus = document.getElementById('env-status');
+            const allEnv = document.getElementById('all-env');
+            
+            // Check specific Supabase variables
+            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+            const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+            
+            envStatus.innerHTML = `
+                <p><strong>VITE_SUPABASE_URL:</strong> 
+                    <span class="${supabaseUrl ? 'success' : 'error'}">
+                        ${supabaseUrl ? '✅ Set (' + supabaseUrl + ')' : '❌ Missing'}
+                    </span>
+                </p>
+                <p><strong>VITE_SUPABASE_ANON_KEY:</strong> 
+                    <span class="${supabaseKey ? 'success' : 'error'}">
+                        ${supabaseKey ? '✅ Set (length: ' + supabaseKey.length + ')' : '❌ Missing'}
+                    </span>
+                </p>
+            `;
+            
+            // Show all environment variables
+            const allEnvVars = import.meta.env;
+            let envHtml = '<ul>';
+            for (const [key, value] of Object.entries(allEnvVars)) {
+                if (key.startsWith('VITE_')) {
+                    envHtml += `<li><strong>${key}:</strong> ${value ? 'Set' : 'Missing'}</li>`;
+                }
+            }
+            envHtml += '</ul>';
+            allEnv.innerHTML = envHtml;
+            
+            // Test Supabase connection
+            testSupabaseConnection();
+        }
+        
+        async function testSupabaseConnection() {
+            const testDiv = document.getElementById('supabase-test');
+            testDiv.innerHTML = '<p>🔄 Testing Supabase connection...</p>';
+            
+            try {
+                // Import Supabase client
+                const { createClient } = await import('@supabase/supabase-js');
+                
+                const url = import.meta.env.VITE_SUPABASE_URL || 'https://paobhbmitoydoxnifijk.supabase.co';
+                const key = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhb2JoYm1pdG95ZG94bmlmaWprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MTQ5MjEsImV4cCI6MjA3NDk5MDkyMX0.vyfqLYjaFTvTB4M2A3FGLihV2bN28kroqID3K5ROTFM';
+                
+                const supabase = createClient(url, key);
+                
+                // Test connection
+                const { data, error } = await supabase.from('blog_posts').select('count').limit(1);
+                
+                if (error) {
+                    testDiv.innerHTML = `<p class="error">❌ Supabase connection failed: ${error.message}</p>`;
+                } else {
+                    testDiv.innerHTML = `<p class="success">✅ Supabase connection successful!</p>`;
+                }
+            } catch (err) {
+                testDiv.innerHTML = `<p class="error">❌ Supabase connection error: ${err.message}</p>`;
+            }
+        }
+        
+        // Run debug when page loads
+        debugEnvironment();
+    </script>
+</body>
+</html>
