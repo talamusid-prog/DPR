@@ -356,21 +356,17 @@ const BlogDetail = () => {
           if (post.featured_image) {
             // Jika featured_image adalah URL lengkap
             if (post.featured_image.startsWith('http')) {
-              console.log('🔗 [BlogDetail] OG Image - URL lengkap:', post.featured_image);
               return post.featured_image;
             }
             // Jika featured_image adalah base64 data URL
             if (post.featured_image.startsWith('data:image/')) {
-              console.log('🔗 [BlogDetail] OG Image - Base64 data URL:', post.featured_image.substring(0, 50) + '...');
               return post.featured_image;
             }
             // Jika featured_image adalah path relatif, buat URL lengkap
             const fullUrl = `https://getCurrentDomain()${post.featured_image.startsWith('/') ? '' : '/'}${post.featured_image}`;
-            console.log('🔗 [BlogDetail] OG Image - Path relatif, dibuat URL lengkap:', fullUrl);
             return fullUrl;
           }
           // Fallback ke logo website
-          console.log('🔗 [BlogDetail] OG Image - Fallback ke logo');
           return 'https://getCurrentDomain()/logo.png';
         })()} />
         <meta property="og:image:width" content="1200" />

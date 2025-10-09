@@ -24,9 +24,7 @@ class AuthService {
   ]
 
   constructor() {
-    // Debug: Log admin emails
-    console.log('🔧 Admin emails configured:', this.adminEmails)
-    console.log('🔧 VITE_ADMIN_EMAIL from env:', import.meta.env.VITE_ADMIN_EMAIL)
+    // Constructor
   }
 
   // Cek apakah user sudah login

@@ -4,11 +4,6 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-// Debug environment variables
-console.log('🔍 Environment Variables Debug:')
-console.log('VITE_SUPABASE_URL:', supabaseUrl ? '✅ Set' : '❌ Missing')
-console.log('VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? '✅ Set' : '❌ Missing')
-
 // Fallback values untuk development
 const fallbackUrl = 'https://paobhbmitoydoxnifijk.supabase.co'
 const fallbackKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhb2JoYm1pdG95ZG94bmlmaWprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MTQ5MjEsImV4cCI6MjA3NDk5MDkyMX0.vyfqLYjaFTvTB4M2A3FGLihV2bN28kroqID3K5ROTFM'
@@ -19,14 +14,8 @@ const finalKey = supabaseAnonKey || fallbackKey
 
 // Validasi final values
 if (!finalUrl || !finalKey) {
-  console.error('❌ Supabase configuration failed:', {
-    url: finalUrl,
-    key: finalKey ? 'Set' : 'Missing'
-  })
   throw new Error('Missing Supabase environment variables. Please check your .env file.')
 }
-
-console.log('✅ Supabase client initialized successfully')
 
 export const supabase = createClient(finalUrl, finalKey)
 

@@ -140,7 +140,6 @@ export const incrementViews = async (postId: string): Promise<void> => {
     if (updateError) {
       console.error('Error updating views:', updateError)
     } else {
-      console.log(`✅ Views incremented for post ${postId}: ${newViews}`)
     }
   } catch (error) {
     console.error('Error in incrementViews:', error)
