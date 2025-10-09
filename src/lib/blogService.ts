@@ -40,10 +40,16 @@ export const getPublishedPosts = async (): Promise<BlogPost[]> => {
 let popularPostsCache: BlogPost[] | null = null
 let popularCacheTimestamp: number = 0
 
+// Cache untuk detail artikel
+const postDetailCache: Map<string, { post: BlogPost; timestamp: number }> = new Map()
+const POST_DETAIL_CACHE_DURATION = 10 * 60 * 1000 // 10 menit untuk detail artikel
+
 // Fungsi untuk clear cache
 export const clearPostsCache = () => {
   postsCache = null
   popularPostsCache = null
+  postDetailCache.clear()
+  relatedPostsCache.clear()
   cacheTimestamp = 0
   popularCacheTimestamp = 0
 }
@@ -103,6 +109,18 @@ export const getAllPosts = async (): Promise<BlogPost[]> => {
 // Fungsi untuk mendapatkan artikel berdasarkan slug (untuk public)
 export const getPostBySlug = async (slug: string): Promise<BlogPost | null> => {
   try {
+    // Cek cache terlebih dahulu
+    const now = Date.now()
+    const cached = postDetailCache.get(slug)
+    
+    if (cached && (now - cached.timestamp) < POST_DETAIL_CACHE_DURATION) {
+      // Increment views count (non-blocking) untuk cached data
+      incrementViews(cached.post.id).catch(error => {
+        console.warn('Failed to increment views (non-critical):', error)
+      })
+      return cached.post
+    }
+
     const { data, error } = await supabase
       .from('blog_posts')
       .select('*')
@@ -115,9 +133,11 @@ export const getPostBySlug = async (slug: string): Promise<BlogPost | null> => {
       return null
     }
 
-    // Increment views count (non-blocking)
+    // Update cache
     if (data) {
-      // Jalankan increment views tanpa menunggu hasilnya
+      postDetailCache.set(slug, { post: data, timestamp: now })
+      
+      // Increment views count (non-blocking)
       incrementViews(data.id).catch(error => {
         console.warn('Failed to increment views (non-critical):', error)
       })
@@ -417,6 +437,64 @@ export const searchPosts = async (query: string): Promise<BlogPost[]> => {
     return data || []
   } catch (error) {
     console.error('Error in searchPosts:', error)
+    return []
+  }
+}
+
+// Cache untuk artikel terkait
+const relatedPostsCache: Map<string, { posts: BlogPost[]; timestamp: number }> = new Map()
+const RELATED_POSTS_CACHE_DURATION = 15 * 60 * 1000 // 15 menit untuk artikel terkait
+
+// Fungsi untuk mendapatkan artikel terkait dengan cache
+export const getRelatedPosts = async (currentPost: BlogPost, limit: number = 3): Promise<BlogPost[]> => {
+  try {
+    const cacheKey = `${currentPost.id}-${limit}`
+    const now = Date.now()
+    const cached = relatedPostsCache.get(cacheKey)
+    
+    if (cached && (now - cached.timestamp) < RELATED_POSTS_CACHE_DURATION) {
+      return cached.posts
+    }
+
+    // Ambil artikel dengan tag yang sama
+    const { data, error } = await supabase
+      .from('blog_posts')
+      .select('*')
+      .eq('status', 'published')
+      .neq('id', currentPost.id)
+      .contains('tags', currentPost.tags || [])
+      .order('published_at', { ascending: false })
+      .limit(limit)
+
+    if (error) {
+      console.error('Error fetching related posts:', error)
+      throw error
+    }
+
+    let relatedPosts = data || []
+
+    // Jika tidak cukup artikel dengan tag yang sama, ambil artikel terbaru
+    if (relatedPosts.length < limit) {
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('status', 'published')
+        .neq('id', currentPost.id)
+        .not('id', 'in', `(${relatedPosts.map(p => p.id).join(',')})`)
+        .order('published_at', { ascending: false })
+        .limit(limit - relatedPosts.length)
+
+      if (!fallbackError && fallbackData) {
+        relatedPosts = [...relatedPosts, ...fallbackData]
+      }
+    }
+
+    // Update cache
+    relatedPostsCache.set(cacheKey, { posts: relatedPosts, timestamp: now })
+
+    return relatedPosts
+  } catch (error) {
+    console.error('Error in getRelatedPosts:', error)
     return []
   }
 }

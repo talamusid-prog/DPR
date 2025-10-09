@@ -20,7 +20,7 @@ import {
   ChevronRight,
   Home
 } from "lucide-react";
-import { getPostBySlug, getPublishedPosts, getPopularPosts } from "@/lib/blogService";
+import { getPostBySlug, getPublishedPosts, getPopularPosts, getRelatedPosts } from "@/lib/blogService";
 import { sanitizeHTML } from "@/lib/sanitize";
 import { BlogPost } from "@/lib/supabase";
 import { getCurrentDomain } from "@/lib/urlUtils";
@@ -60,14 +60,18 @@ const BlogDetail = () => {
       }
 
       const postData = await getPostBySlug(slug);
-             if (postData) {
-         setPost(postData);
-         await loadRelatedPosts(postData);
-         await loadPopularPosts();
-         await loadPopularTags();
-       } else {
-         setError("Artikel tidak ditemukan");
-       }
+      if (postData) {
+        setPost(postData);
+        
+        // Load related posts, popular posts, and tags in parallel untuk performa yang lebih baik
+        await Promise.all([
+          loadRelatedPosts(postData),
+          loadPopularPosts(),
+          loadPopularTags()
+        ]);
+      } else {
+        setError("Artikel tidak ditemukan");
+      }
     } catch (error) {
       console.error("Error loading post:", error);
       setError("Terjadi kesalahan saat memuat artikel");
@@ -100,16 +104,8 @@ const BlogDetail = () => {
 
   const loadRelatedPosts = async (currentPost: BlogPost) => {
     try {
-      const allPosts = await getPublishedPosts();
-      const related = allPosts
-        .filter(p => p.id !== currentPost.id)
-        .filter(p => 
-          p.tags?.some(tag => 
-            currentPost.tags?.includes(tag)
-          ) || 
-          p.author === currentPost.author
-        )
-        .slice(0, 3);
+      // Gunakan cache untuk artikel terkait
+      const related = await getRelatedPosts(currentPost, 3);
       setRelatedPosts(related);
     } catch (error) {
       console.error("Error loading related posts:", error);
@@ -496,6 +492,8 @@ const BlogDetail = () => {
                     src={post.featured_image}
                     alt={post.title}
                     className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                   />
                   {/* Overlay gradient for better text readability */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
@@ -729,6 +727,8 @@ const BlogDetail = () => {
                         src={relatedPost.featured_image}
                         alt={relatedPost.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                        decoding="async"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     </div>
