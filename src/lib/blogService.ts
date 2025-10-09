@@ -1,5 +1,6 @@
 import { supabase, BlogPost, CreateBlogPost } from './supabase'
 import { uploadImage, getOptimizedImageUrl, UploadResult } from './imageUploadService'
+import { uploadWithFallback, getOptimizedBase64Url } from './fallbackUploadService'
 
 // Cache untuk menyimpan data artikel
 let postsCache: BlogPost[] | null = null
@@ -55,7 +56,7 @@ export const clearPostsCache = () => {
   popularCacheTimestamp = 0
 }
 
-// Fungsi untuk upload gambar artikel
+// Fungsi untuk upload gambar artikel dengan fallback
 export const uploadBlogImage = async (file: File): Promise<UploadResult> => {
   try {
     console.log('📤 Uploading blog image:', {
@@ -64,6 +65,7 @@ export const uploadBlogImage = async (file: File): Promise<UploadResult> => {
       type: file.type
     })
 
+    // Coba upload ke Supabase Storage dulu
     const result = await uploadImage(file, {
       bucket: 'blog-images',
       folder: 'articles',
@@ -72,17 +74,36 @@ export const uploadBlogImage = async (file: File): Promise<UploadResult> => {
     })
 
     if (result.success && result.url) {
-      console.log('✅ Blog image uploaded successfully:', result.url)
+      console.log('✅ Blog image uploaded to Supabase Storage:', result.url)
+      return result
     } else {
-      console.error('❌ Blog image upload failed:', result.error)
+      console.log('⚠️ Supabase Storage failed, trying fallback...')
+      
+      // Fallback ke base64 compressed
+      const fallbackResult = await uploadWithFallback(file)
+      
+      if (fallbackResult.success) {
+        console.log('✅ Blog image uploaded with fallback (base64 compressed)')
+      } else {
+        console.error('❌ Both Supabase and fallback failed')
+      }
+      
+      return fallbackResult
     }
-
-    return result
   } catch (error) {
     console.error('❌ Upload blog image error:', error)
-    return {
-      success: false,
-      error: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+    
+    // Try fallback on error
+    try {
+      console.log('🔄 Trying fallback due to error...')
+      const fallbackResult = await uploadWithFallback(file)
+      return fallbackResult
+    } catch (fallbackError) {
+      console.error('❌ Fallback also failed:', fallbackError)
+      return {
+        success: false,
+        error: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      }
     }
   }
 }
@@ -93,6 +114,12 @@ export const getBlogImageUrl = (imagePath: string, options?: {
   height?: number
   quality?: number
 }): string => {
+  // Jika base64, gunakan fallback service
+  if (imagePath.startsWith('data:image/')) {
+    return getOptimizedBase64Url(imagePath, options)
+  }
+  
+  // Jika Supabase Storage URL, gunakan service normal
   return getOptimizedImageUrl(imagePath, {
     ...options,
     format: 'webp'

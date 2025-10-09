@@ -51,72 +51,131 @@ const validateFile = (file: File, config: UploadConfig): string | null => {
   return null
 }
 
-// Fungsi untuk upload gambar ke Supabase Storage
+// Fungsi untuk upload gambar ke Supabase Storage dengan timeout dan retry
 export const uploadImage = async (
   file: File, 
   config: Partial<UploadConfig> = {}
 ): Promise<UploadResult> => {
-  try {
-    const finalConfig = { ...DEFAULT_CONFIG, ...config }
-    
-    // Validasi file
-    const validationError = validateFile(file, finalConfig)
-    if (validationError) {
-      return {
-        success: false,
-        error: validationError
-      }
-    }
-
-    // Generate nama file
-    const fileName = generateFileName(file.name, finalConfig.folder)
-    
-    console.log('📤 Uploading image:', {
-      fileName,
-      size: file.size,
-      type: file.type,
-      bucket: finalConfig.bucket
-    })
-
-    // Upload ke Supabase Storage
-    const { data, error } = await supabase.storage
-      .from(finalConfig.bucket)
-      .upload(fileName, file, {
-        cacheControl: '3600',
-        upsert: false
-      })
-
-    if (error) {
-      console.error('❌ Upload error:', error)
-      return {
-        success: false,
-        error: `Gagal mengupload gambar: ${error.message}`
-      }
-    }
-
-    // Dapatkan URL publik
-    const { data: urlData } = supabase.storage
-      .from(finalConfig.bucket)
-      .getPublicUrl(fileName)
-
-    const publicUrl = urlData.publicUrl
-
-    console.log('✅ Upload berhasil:', {
-      path: data.path,
-      url: publicUrl
-    })
-
-    return {
-      success: true,
-      url: publicUrl,
-      path: data.path
-    }
-
-  } catch (error) {
-    console.error('❌ Upload error:', error)
+  const finalConfig = { ...DEFAULT_CONFIG, ...config }
+  
+  // Validasi file
+  const validationError = validateFile(file, finalConfig)
+  if (validationError) {
     return {
       success: false,
-      error: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      error: validationError
+    }
+  }
+
+  // Generate nama file
+  const fileName = generateFileName(file.name, finalConfig.folder)
+  
+  console.log('📤 Uploading image:', {
+    fileName,
+    size: file.size,
+    type: file.type,
+    bucket: finalConfig.bucket
+  })
+
+  // Retry mechanism dengan timeout
+  const maxRetries = 3
+  let lastError: any
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`🔄 Upload attempt ${attempt}/${maxRetries}`)
+      
+      // Create timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Upload timeout after 30 seconds')), 30000)
+      })
+
+      // Upload dengan timeout
+      const uploadPromise = supabase.storage
+        .from(finalConfig.bucket)
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        })
+
+      const { data, error } = await Promise.race([uploadPromise, timeoutPromise]) as any
+
+      if (error) {
+        console.error(`❌ Upload error (attempt ${attempt}):`, error)
+        
+        // Jika error timeout atau connection, coba lagi
+        if (error.message?.includes('timeout') || 
+            error.message?.includes('connection') ||
+            error.message?.includes('timed out')) {
+          lastError = error
+          if (attempt < maxRetries) {
+            const delay = Math.pow(2, attempt) * 1000 // 2s, 4s, 8s
+            console.log(`⏳ Waiting ${delay}ms before retry...`)
+            await new Promise(resolve => setTimeout(resolve, delay))
+            continue
+          }
+        }
+        
+        return {
+          success: false,
+          error: `Gagal mengupload gambar: ${error.message}`
+        }
+      }
+
+      // Dapatkan URL publik
+      const { data: urlData } = supabase.storage
+        .from(finalConfig.bucket)
+        .getPublicUrl(fileName)
+
+      const publicUrl = urlData.publicUrl
+
+      console.log('✅ Upload berhasil:', {
+        path: data.path,
+        url: publicUrl,
+        attempts: attempt
+      })
+
+      return {
+        success: true,
+        url: publicUrl,
+        path: data.path
+      }
+
+    } catch (error) {
+      console.error(`❌ Upload catch error (attempt ${attempt}):`, error)
+      lastError = error
+      
+      if (attempt < maxRetries) {
+        const delay = Math.pow(2, attempt) * 1000
+        console.log(`⏳ Waiting ${delay}ms before retry...`)
+        await new Promise(resolve => setTimeout(resolve, delay))
+      }
+    }
+  }
+
+  // Jika semua retry gagal, coba fallback ke base64
+  console.error('❌ All upload attempts failed, trying base64 fallback')
+  
+  try {
+    // Convert file to base64 as fallback
+    const base64 = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result as string)
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
+
+    console.log('✅ Using base64 fallback for image')
+    return {
+      success: true,
+      url: base64,
+      path: 'base64-fallback'
+    }
+  } catch (fallbackError) {
+    console.error('❌ Base64 fallback also failed:', fallbackError)
+    return {
+      success: false,
+      error: `Upload gagal setelah ${maxRetries} percobaan dan fallback base64: ${lastError?.message || 'Unknown error'}`
     }
   }
 }
@@ -215,12 +274,50 @@ export const createBucket = async (
   }
 }
 
+// Fungsi untuk cek status Supabase Storage
+export const checkStorageHealth = async (): Promise<{
+  healthy: boolean
+  buckets: string[]
+  error?: string
+}> => {
+  try {
+    const { data: buckets, error } = await supabase.storage.listBuckets()
+    
+    if (error) {
+      return {
+        healthy: false,
+        buckets: [],
+        error: error.message
+      }
+    }
+
+    const bucketNames = buckets?.map(b => b.name) || []
+    
+    return {
+      healthy: true,
+      buckets: bucketNames
+    }
+  } catch (error) {
+    return {
+      healthy: false,
+      buckets: [],
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+}
+
 // Fungsi untuk setup storage bucket (run once)
 export const setupStorage = async (): Promise<boolean> => {
   try {
+    // Cek health dulu
+    const health = await checkStorageHealth()
+    if (!health.healthy) {
+      console.error('❌ Storage not healthy:', health.error)
+      return false
+    }
+
     // Cek apakah bucket sudah ada
-    const { data: buckets } = await supabase.storage.listBuckets()
-    const bucketExists = buckets?.some(bucket => bucket.name === 'blog-images')
+    const bucketExists = health.buckets.includes('blog-images')
     
     if (bucketExists) {
       console.log('✅ Bucket blog-images sudah ada')

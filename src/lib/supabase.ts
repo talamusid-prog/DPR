@@ -12,9 +12,9 @@ const fallbackKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const envUrl = import.meta.env.VITE_SUPABASE_URL
 const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-// Prioritas: Environment > Custom Supabase > Fallback Supabase
-const finalUrl = envUrl || supabaseUrl || fallbackUrl
-const finalKey = envKey || supabaseAnonKey || fallbackKey
+// Prioritas: Environment > Fallback Supabase > Custom Supabase (karena custom bermasalah)
+const finalUrl = envUrl || fallbackUrl || supabaseUrl
+const finalKey = envKey || fallbackKey || supabaseAnonKey
 
 // Validasi final values
 if (!finalUrl || !finalKey) {
