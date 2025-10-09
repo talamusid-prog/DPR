@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { BookOpen, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
@@ -11,66 +11,111 @@ const Blog = () => {
   const [loading, setLoading] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Load posts on component mount
-  useEffect(() => {
-    loadPosts();
-  }, []);
+  // Dummy data untuk demo
+  const dummyPosts: BlogPost[] = useMemo(() => [
+    {
+      id: "1",
+      title: "Keberadaan KEK Sanur Harus Seiring dengan Identitas Sejarah dan Budaya Bali",
+      excerpt: "Pembangunan Kawasan Ekonomi Khusus (KEK) Sanur harus memperhatikan aspek sejarah dan budaya Bali yang kental.",
+      content: "Konten lengkap artikel...",
+      featured_image: "/berita1.jpg",
+      author: "Admin",
+      published_at: "2025-10-06T00:00:00Z",
+      created_at: "2025-10-06T00:00:00Z",
+      updated_at: "2025-10-06T00:00:00Z",
+      slug: "keberadaan-kek-sanur",
+      status: "published",
+      views: 0,
+      tags: ["KEK", "Sanur", "Bali"]
+    },
+    {
+      id: "2",
+      title: "BUMN Didorong Tingkatkan Kontribusi pada Pembangunan",
+      excerpt: "Pemerintah mendorong BUMN untuk meningkatkan kontribusi dalam pembangunan nasional.",
+      content: "Konten lengkap artikel...",
+      featured_image: "/berita2.jpg",
+      author: "Admin",
+      published_at: "2025-10-06T00:00:00Z",
+      created_at: "2025-10-06T00:00:00Z",
+      updated_at: "2025-10-06T00:00:00Z",
+      slug: "bumn-didorong-tingkatkan-kontribusi",
+      status: "published",
+      views: 0,
+      tags: ["BUMN", "Pembangunan"]
+    },
+    {
+      id: "3",
+      title: "TNI tidak boleh Terjebak Struktur Usang tapi",
+      excerpt: "TNI harus terus beradaptasi dengan perkembangan zaman dan tidak terjebak dalam struktur usang.",
+      content: "Konten lengkap artikel...",
+      featured_image: "/berita3.jpg",
+      author: "Admin",
+      published_at: "2025-10-06T00:00:00Z",
+      created_at: "2025-10-06T00:00:00Z",
+      updated_at: "2025-10-06T00:00:00Z",
+      slug: "tni-tidak-boleh-terjebak-struktur",
+      status: "published",
+      views: 0,
+      tags: ["TNI", "Struktur"]
+    },
+    {
+      id: "4",
+      title: "Legislator NasDem: Pelayanan Harus Relevan dengan",
+      excerpt: "Legislator NasDem menekankan pentingnya pelayanan yang relevan dengan kebutuhan masyarakat.",
+      content: "Konten lengkap artikel...",
+      featured_image: "/berita4.jpg",
+      author: "Admin",
+      published_at: "2025-10-06T00:00:00Z",
+      created_at: "2025-10-06T00:00:00Z",
+      updated_at: "2025-10-06T00:00:00Z",
+      slug: "legislator-nasdem-pelayanan-harus-relevan",
+      status: "published",
+      views: 0,
+      tags: ["NasDem", "Pelayanan"]
+    },
+    {
+      id: "5",
+      title: "Muslim Ayub Minta Usut Tuntas Dugaan Pelanggaran HAM di",
+      excerpt: "Muslim Ayub meminta agar dugaan pelanggaran HAM diselidiki secara tuntas.",
+      content: "Konten lengkap artikel...",
+      featured_image: "/berita5.jpg",
+      author: "Admin",
+      published_at: "2025-10-06T00:00:00Z",
+      created_at: "2025-10-06T00:00:00Z",
+      updated_at: "2025-10-06T00:00:00Z",
+      slug: "muslim-ayub-minta-usut-tuntas",
+      status: "published",
+      views: 0,
+      tags: ["HAM", "Muslim Ayub"]
+    }
+  ], []);
 
-  const loadPosts = async () => {
+  const loadPosts = useCallback(async () => {
     try {
       setLoading(true);
+      
+      // Preload dengan data dummy terlebih dahulu untuk UX yang lebih baik
+      if (posts.length === 0) {
+        setPosts(dummyPosts);
+      }
+      
       const data = await getPublishedPosts();
       setPosts(data);
     } catch (error) {
       console.error("Error loading posts:", error);
+      // Fallback ke dummy data jika error
+      if (posts.length === 0) {
+        setPosts(dummyPosts);
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, [posts.length, dummyPosts]);
 
-  // Dummy data untuk demo
-  const dummyPosts = [
-    {
-      id: 1,
-      title: "Keberadaan KEK Sanur Harus Seiring dengan Identitas Sejarah dan Budaya Bali",
-      excerpt: "Pembangunan Kawasan Ekonomi Khusus (KEK) Sanur harus memperhatikan aspek sejarah dan budaya Bali yang kental.",
-      featured_image: "/berita1.jpg",
-      created_at: "2025-10-06",
-      slug: "keberadaan-kek-sanur"
-    },
-    {
-      id: 2,
-      title: "BUMN Didorong Tingkatkan Kontribusi pada Pembangunan",
-      excerpt: "Pemerintah mendorong BUMN untuk meningkatkan kontribusi dalam pembangunan nasional.",
-      featured_image: "/berita2.jpg",
-      created_at: "2025-10-06",
-      slug: "bumn-didorong-tingkatkan-kontribusi"
-    },
-    {
-      id: 3,
-      title: "TNI tidak boleh Terjebak Struktur Usang tapi",
-      excerpt: "TNI harus terus beradaptasi dengan perkembangan zaman dan tidak terjebak dalam struktur usang.",
-      featured_image: "/berita3.jpg",
-      created_at: "2025-10-06",
-      slug: "tni-tidak-boleh-terjebak-struktur"
-    },
-    {
-      id: 4,
-      title: "Legislator NasDem: Pelayanan Harus Relevan dengan",
-      excerpt: "Legislator NasDem menekankan pentingnya pelayanan yang relevan dengan kebutuhan masyarakat.",
-      featured_image: "/berita4.jpg",
-      created_at: "2025-10-06",
-      slug: "legislator-nasdem-pelayanan-harus-relevan"
-    },
-    {
-      id: 5,
-      title: "Muslim Ayub Minta Usut Tuntas Dugaan Pelanggaran HAM di",
-      excerpt: "Muslim Ayub meminta agar dugaan pelanggaran HAM diselidiki secara tuntas.",
-      featured_image: "/berita5.jpg",
-      created_at: "2025-10-06",
-      slug: "muslim-ayub-minta-usut-tuntas"
-    }
-  ];
+  // Load posts on component mount
+  useEffect(() => {
+    loadPosts();
+  }, [loadPosts]);
 
   const displayPosts = posts.length > 0 ? posts : dummyPosts;
   const featuredPost = displayPosts[0];
@@ -110,10 +155,17 @@ const Blog = () => {
         </div>
 
         {/* Loading State */}
-        {loading && (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Memuat berita...</p>
+        {loading && posts.length === 0 && (
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Loading Skeleton */}
+            <div className="lg:col-span-2">
+              <div className="h-96 bg-gray-200 rounded-2xl animate-pulse"></div>
+            </div>
+            <div className="space-y-6">
+              {[...Array(3)].map((_, index) => (
+                <div key={index} className="bg-gray-200 rounded-lg h-32 animate-pulse"></div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -140,6 +192,8 @@ const Blog = () => {
                           src={post.featured_image || `/berita${index + 1}.jpg`}
                                 alt={post.title}
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                loading="lazy"
+                                decoding="async"
                               />
                         {/* Dark Overlay */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>

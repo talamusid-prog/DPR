@@ -1,8 +1,19 @@
 import { supabase, BlogPost, CreateBlogPost } from './supabase'
 
-// Fungsi untuk mendapatkan semua artikel yang dipublikasikan
+// Cache untuk menyimpan data artikel
+let postsCache: BlogPost[] | null = null
+let cacheTimestamp: number = 0
+const CACHE_DURATION = 5 * 60 * 1000 // 5 menit
+
+// Fungsi untuk mendapatkan semua artikel yang dipublikasikan dengan cache
 export const getPublishedPosts = async (): Promise<BlogPost[]> => {
   try {
+    // Cek cache terlebih dahulu
+    const now = Date.now()
+    if (postsCache && (now - cacheTimestamp) < CACHE_DURATION) {
+      return postsCache
+    }
+
     const { data, error } = await supabase
       .from('blog_posts')
       .select('*')
@@ -14,16 +25,38 @@ export const getPublishedPosts = async (): Promise<BlogPost[]> => {
       throw error
     }
 
-    return data || []
+    // Update cache
+    postsCache = data || []
+    cacheTimestamp = now
+
+    return postsCache
   } catch (error) {
     console.error('Error in getPublishedPosts:', error)
     return []
   }
 }
 
-// Fungsi untuk mendapatkan artikel populer
+// Cache untuk artikel populer
+let popularPostsCache: BlogPost[] | null = null
+let popularCacheTimestamp: number = 0
+
+// Fungsi untuk clear cache
+export const clearPostsCache = () => {
+  postsCache = null
+  popularPostsCache = null
+  cacheTimestamp = 0
+  popularCacheTimestamp = 0
+}
+
+// Fungsi untuk mendapatkan artikel populer dengan cache
 export const getPopularPosts = async (limit: number = 6): Promise<BlogPost[]> => {
   try {
+    // Cek cache terlebih dahulu
+    const now = Date.now()
+    if (popularPostsCache && (now - popularCacheTimestamp) < CACHE_DURATION) {
+      return popularPostsCache.slice(0, limit)
+    }
+
     const { data, error } = await supabase
       .from('blog_posts')
       .select('*')
@@ -36,7 +69,11 @@ export const getPopularPosts = async (limit: number = 6): Promise<BlogPost[]> =>
       throw error
     }
 
-    return data || []
+    // Update cache
+    popularPostsCache = data || []
+    popularCacheTimestamp = now
+
+    return popularPostsCache
   } catch (error) {
     console.error('Error in getPopularPosts:', error)
     return []
@@ -139,7 +176,6 @@ export const incrementViews = async (postId: string): Promise<void> => {
 
     if (updateError) {
       console.error('Error updating views:', updateError)
-    } else {
     }
   } catch (error) {
     console.error('Error in incrementViews:', error)
