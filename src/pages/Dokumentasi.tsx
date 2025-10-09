@@ -16,8 +16,28 @@ const Dokumentasi = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [searchTerm, setSearchTerm] = useState("");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "title">("newest");
+
+  // Set default view mode based on screen size
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setViewMode("list"); // Mobile: default to list
+      } else {
+        setViewMode("grid"); // Desktop: default to grid
+      }
+    };
+
+    // Set initial view mode
+    handleResize();
+
+    // Add event listener
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Load galleries from Supabase
   const loadGalleries = useCallback(async () => {
