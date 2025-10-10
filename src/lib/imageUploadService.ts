@@ -70,12 +70,7 @@ export const uploadImage = async (
   // Generate nama file
   const fileName = generateFileName(file.name, finalConfig.folder)
   
-  console.log('📤 Uploading image:', {
-    fileName,
-    size: file.size,
-    type: file.type,
-    bucket: finalConfig.bucket
-  })
+  // Uploading image
 
   // Retry mechanism dengan timeout
   const maxRetries = 3
@@ -83,7 +78,7 @@ export const uploadImage = async (
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      console.log(`🔄 Upload attempt ${attempt}/${maxRetries}`)
+      // Upload attempt
       
       // Create timeout promise
       const timeoutPromise = new Promise((_, reject) => {
@@ -102,7 +97,7 @@ export const uploadImage = async (
       const { data, error } = result as { data: { path: string } | null; error: Error | null }
 
       if (error) {
-        console.error(`❌ Upload error (attempt ${attempt}):`, error)
+        // Upload error
         
         // Jika error timeout atau connection, coba lagi
         if (error.message?.includes('timeout') || 
@@ -111,7 +106,7 @@ export const uploadImage = async (
           lastError = error
           if (attempt < maxRetries) {
             const delay = Math.pow(2, attempt) * 1000 // 2s, 4s, 8s
-            console.log(`⏳ Waiting ${delay}ms before retry...`)
+            // Waiting before retry
             await new Promise(resolve => setTimeout(resolve, delay))
             continue
           }
@@ -211,14 +206,14 @@ export const deleteImage = async (
       .remove([path])
 
     if (error) {
-      console.error('❌ Delete error:', error)
+      // Delete error
       return false
     }
 
-    console.log('✅ Image deleted:', path)
+    // Image deleted
     return true
   } catch (error) {
-    console.error('❌ Delete error:', error)
+    // Delete error
     return false
   }
 }
@@ -267,14 +262,14 @@ export const createBucket = async (
     })
 
     if (error) {
-      console.error('❌ Create bucket error:', error)
+      // Create bucket error
       return false
     }
 
-    console.log('✅ Bucket created:', bucketName)
+    // Bucket created
     return true
   } catch (error) {
-    console.error('❌ Create bucket error:', error)
+    // Create bucket error
     return false
   }
 }
@@ -317,7 +312,7 @@ export const setupStorage = async (): Promise<boolean> => {
     // Cek health dulu
     const health = await checkStorageHealth()
     if (!health.healthy) {
-      console.error('❌ Storage not healthy:', health.error)
+      // Storage not healthy
       return false
     }
 
@@ -325,20 +320,20 @@ export const setupStorage = async (): Promise<boolean> => {
     const bucketExists = health.buckets.includes('blog-images')
     
     if (bucketExists) {
-      console.log('✅ Bucket blog-images sudah ada')
+      // Bucket blog-images sudah ada
       return true
     }
 
     // Buat bucket jika belum ada
     const created = await createBucket('blog-images', true)
     if (created) {
-      console.log('✅ Storage setup completed')
+      // Storage setup completed
       return true
     }
 
     return false
   } catch (error) {
-    console.error('❌ Setup storage error:', error)
+    // Setup storage error
     return false
   }
 }

@@ -427,8 +427,6 @@ const EditArticle = () => {
                          '|',
                          'bold',
                          'italic',
-                         'underline',
-                         'strikethrough',
                          '|',
                          'bulletedList',
                          'numberedList',
@@ -437,9 +435,7 @@ const EditArticle = () => {
                          'link',
                          '|',
                          'undo',
-                         'redo',
-                         '|',
-                         'pasteFromWord'
+                         'redo'
                        ],
                        heading: {
                          options: [

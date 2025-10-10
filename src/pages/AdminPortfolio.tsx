@@ -680,8 +680,6 @@ const AdminPortfolio = () => {
                             '|',
                             'bold',
                             'italic',
-                            'underline',
-                            'strikethrough',
                             '|',
                             'bulletedList',
                             'numberedList',
@@ -690,9 +688,7 @@ const AdminPortfolio = () => {
                             'link',
                             '|',
                             'undo',
-                            'redo',
-                            '|',
-                            'pasteFromWord'
+                            'redo'
                           ],
                           heading: {
                             options: [
