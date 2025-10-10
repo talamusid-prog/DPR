@@ -16,7 +16,6 @@ import EditArticle from "./pages/EditArticle";
 import AdminGallery from "./pages/AdminGallery";
 import AdminAspirasi from "./pages/AdminAspirasi";
 import AdminKalenderPage from "./pages/AdminKalenderPage";
-import BlogDetail from "./components/BlogDetail";
 import Dokumentasi from "./pages/Dokumentasi";
 import NotFound from "./pages/NotFound";
 import Registration from "./pages/Registration";
