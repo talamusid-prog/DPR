@@ -641,13 +641,18 @@ export const getRelatedPosts = async (currentPost: BlogPost, limit: number = 3):
     // Jika tidak cukup artikel dengan tag yang sama, ambil artikel terbaru
     if (relatedPosts.length < limit) {
       const excludeIds = relatedPosts.map(p => p.id)
-      const { data: fallbackData, error: fallbackError } = await supabase
+      let fallbackQuery = supabase
         .from('articles_feed')
         .select('id,title,slug,excerpt,thumbnail_url,published_at,created_at,updated_at,tags,categories')
         .neq('id', currentPost.id)
-        .not('id', 'in', `(${excludeIds.join(',') || 'NULL'})`)
         .order('published_at', { ascending: false })
         .limit(limit - relatedPosts.length)
+
+      if (excludeIds.length > 0) {
+        fallbackQuery = fallbackQuery.not('id', 'in', `(${excludeIds.join(',')})`)
+      }
+
+      const { data: fallbackData, error: fallbackError } = await fallbackQuery
 
       if (!fallbackError && fallbackData) {
         relatedPosts = [...relatedPosts, ...fallbackData]
