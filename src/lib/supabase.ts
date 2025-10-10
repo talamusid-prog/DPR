@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
 // Konfigurasi Supabase Zeabur
 const supabaseUrl = 'https://supabase-k8m28006.zeabur.app'
@@ -17,20 +17,48 @@ if (!finalUrl || !finalKey) {
   throw new Error('Missing Supabase configuration.')
 }
 
-// Debug logging
-console.log('🔧 Supabase Configuration:', {
-  url: finalUrl,
-  key: finalKey ? `${finalKey.substring(0, 20)}...` : 'Missing',
-  source: envUrl ? 'Environment' : 'Supabase Zeabur'
-})
+// Debug logging (hanya di development)
+if (import.meta.env.DEV) {
+  console.log('🔧 Supabase Configuration:', {
+    url: finalUrl,
+    key: finalKey ? `${finalKey.substring(0, 20)}...` : 'Missing',
+    source: envUrl ? 'Environment' : 'Supabase Zeabur'
+  })
+}
 
-export const supabase = createClient(finalUrl, finalKey)
+// Singleton pattern untuk mencegah multiple instances
+let supabaseInstance: SupabaseClient | null = null
+
+export const supabase = (() => {
+  if (!supabaseInstance) {
+    supabaseInstance = createClient(finalUrl, finalKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    })
+  }
+  return supabaseInstance
+})()
 
 // Service role key untuk operasi admin (jika diperlukan)
 export const supabaseServiceRoleKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJzZXJ2aWNlX3JvbGUiLAogICAgImlzcyI6ICJzdXBhYmFzZS1kZW1vIiwKICAgICJpYXQiOiAxNjQxNzY5MjAwLAogICAgImV4cCI6IDE3OTk1MzU2MDAKfQ.DaYlNEoUrrEn2Ig7tqibS-PHK5vgusbcbo7X36XVt4Q'
 
-// Client dengan service role untuk operasi admin
-export const supabaseAdmin = createClient(finalUrl, supabaseServiceRoleKey)
+// Client dengan service role untuk operasi admin (singleton)
+let supabaseAdminInstance: SupabaseClient | null = null
+
+export const supabaseAdmin = (() => {
+  if (!supabaseAdminInstance) {
+    supabaseAdminInstance = createClient(finalUrl, supabaseServiceRoleKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false
+      }
+    })
+  }
+  return supabaseAdminInstance
+})()
 
 // Types untuk Blog
 export interface BlogPost {
