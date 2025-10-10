@@ -7,7 +7,7 @@ type ArticlesFeedRow = {
   slug: string
   excerpt: string | null
   thumbnail_url: string | null
-  author_name: string | null
+  author_name?: string | null
   published_at: string | null
   created_at: string
   updated_at: string
@@ -97,7 +97,7 @@ export const getPublishedPosts = async (): Promise<BlogPost[]> => {
     if (!mapped.length) {
       const { data: feedData } = await supabase
         .from('articles_feed')
-        .select('id,title,slug,excerpt,thumbnail_url,author_name,published_at,created_at,updated_at,tags,categories')
+        .select('id,title,slug,excerpt,thumbnail_url,published_at,created_at,updated_at,tags,categories')
         .order('published_at', { ascending: false })
       if (feedData) {
         mapped = feedData.map((row: ArticlesFeedRow) => mapArticlesFeedRowToBlogPost(row))
@@ -216,8 +216,9 @@ export const getPopularPosts = async (limit: number = 6): Promise<BlogPost[]> =>
     }
 
     const { data, error } = await supabase
-      .from('articles_feed')
-      .select('id,title,slug,excerpt,thumbnail_url,author_name,published_at,created_at,updated_at,tags,categories')
+      .from('articles')
+      .select('id,title,slug,excerpt,thumbnail_url,published_at,created_at,updated_at')
+      .eq('status', 'published')
       .order('published_at', { ascending: false })
       .limit(limit)
 
@@ -227,7 +228,7 @@ export const getPopularPosts = async (limit: number = 6): Promise<BlogPost[]> =>
     }
 
     // Update cache
-    popularPostsCache = (data || []).map((row: ArticlesFeedRow) => mapArticlesFeedRowToBlogPost(row))
+    popularPostsCache = (data || []).map((row: ArticleRow) => mapArticleRowToBlogPost(row))
     popularCacheTimestamp = now
 
     return popularPostsCache
@@ -619,13 +620,16 @@ export const getRelatedPosts = async (currentPost: BlogPost, limit: number = 3):
     }
 
     // Ambil artikel dengan tag yang sama
-    const { data, error } = await supabase
+    const baseQuery = supabase
       .from('articles_feed')
-      .select('id,title,slug,excerpt,thumbnail_url,author_name,published_at,created_at,updated_at,tags,categories')
+      .select('id,title,slug,excerpt,thumbnail_url,published_at,created_at,updated_at,tags,categories')
       .neq('id', currentPost.id)
-      .contains('tags', currentPost.tags || [])
       .order('published_at', { ascending: false })
       .limit(limit)
+
+    const { data, error } = currentPost.tags && currentPost.tags.length
+      ? await baseQuery.contains('tags', currentPost.tags)
+      : await baseQuery
 
     if (error) {
       console.error('Error fetching related posts:', error)
@@ -639,7 +643,7 @@ export const getRelatedPosts = async (currentPost: BlogPost, limit: number = 3):
       const excludeIds = relatedPosts.map(p => p.id)
       const { data: fallbackData, error: fallbackError } = await supabase
         .from('articles_feed')
-        .select('id,title,slug,excerpt,thumbnail_url,author_name,published_at,created_at,updated_at,tags,categories')
+        .select('id,title,slug,excerpt,thumbnail_url,published_at,created_at,updated_at,tags,categories')
         .neq('id', currentPost.id)
         .not('id', 'in', `(${excludeIds.join(',') || 'NULL'})`)
         .order('published_at', { ascending: false })
