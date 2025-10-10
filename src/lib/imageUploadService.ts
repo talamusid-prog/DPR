@@ -134,12 +134,12 @@ export const uploadImage = async (
       try {
         const testResponse = await fetch(publicUrl, { method: 'HEAD' })
         if (!testResponse.ok) {
-          console.warn('⚠️ File uploaded but not accessible, using fallback...')
-          throw new Error(`File not accessible: ${testResponse.status} ${testResponse.statusText}`)
+          // File tidak dapat diakses, gunakan fallback tanpa error logging
+          throw new Error(`File not accessible: ${testResponse.status}`)
         }
       } catch (testError) {
-        console.warn('⚠️ File accessibility test failed, using fallback...')
-        throw new Error(`File accessibility test failed: ${testError.message}`)
+        // File accessibility test gagal, gunakan fallback tanpa error logging
+        throw new Error(`File accessibility test failed`)
       }
 
       console.log('✅ Upload berhasil dan file dapat diakses:', {
@@ -155,7 +155,6 @@ export const uploadImage = async (
       }
 
     } catch (error) {
-      console.error(`❌ Upload catch error (attempt ${attempt}):`, error)
       lastError = error
       
       if (attempt < maxRetries) {
@@ -167,7 +166,7 @@ export const uploadImage = async (
   }
 
   // Jika semua retry gagal, coba fallback ke base64
-  console.error('❌ All upload attempts failed, trying base64 fallback')
+  console.log('🔄 Using base64 fallback mechanism...')
   
   try {
     // Convert file to base64 as fallback
@@ -178,17 +177,17 @@ export const uploadImage = async (
       reader.readAsDataURL(file)
     })
 
-    console.log('✅ Using base64 fallback for image')
+    console.log('✅ Image uploaded with base64 fallback')
     return {
       success: true,
       url: base64,
       path: 'base64-fallback'
     }
   } catch (fallbackError) {
-    console.error('❌ Base64 fallback also failed:', fallbackError)
+    console.error('❌ Base64 fallback failed:', fallbackError)
     return {
       success: false,
-      error: `Upload gagal setelah ${maxRetries} percobaan dan fallback base64: ${lastError?.message || 'Unknown error'}`
+      error: `Upload gagal: ${lastError?.message || 'Unknown error'}`
     }
   }
 }
