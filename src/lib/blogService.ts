@@ -90,8 +90,23 @@ export const getPublishedPosts = async (): Promise<BlogPost[]> => {
       throw error
     }
 
+    let mapped = (data || []).map((row: ArticlesFeedRow) => mapArticlesFeedRowToBlogPost(row))
+
+    // Fallback: jika feed kosong, ambil langsung dari articles
+    if (!mapped.length) {
+      const { data: articlesData, error: artErr } = await supabase
+        .from('articles')
+        .select('id,title,slug,excerpt,thumbnail_url,published_at,created_at,updated_at')
+        .eq('status', 'published')
+        .order('published_at', { ascending: false })
+        .limit(10)
+      if (!artErr && articlesData) {
+        mapped = articlesData.map((row: ArticleRow) => mapArticleRowToBlogPost(row))
+      }
+    }
+
     // Update cache
-    postsCache = (data || []).map((row: ArticlesFeedRow) => mapArticlesFeedRowToBlogPost(row))
+    postsCache = mapped
     cacheTimestamp = now
 
     return postsCache
@@ -373,6 +388,9 @@ export const createPost = async (post: CreateBlogPost): Promise<BlogPost | null>
       await upsertTagsAndAttach(data.id, post.tags);
     }
 
+    // refresh feed setelah create
+    await supabaseAdmin.rpc('refresh_articles_feed');
+
     return mapArticleRowToBlogPost(data as ArticleRow);
   } catch (error) {
     console.error('Error in createPost:', error)
@@ -411,6 +429,9 @@ export const createPostWithSlug = async (post: Omit<CreateBlogPost, 'slug'>): Pr
     if (data && post.tags?.length) {
       await upsertTagsAndAttach(data.id, post.tags);
     }
+
+    // refresh feed setelah create
+    await supabaseAdmin.rpc('refresh_articles_feed');
 
     return true;
   } catch (error) {
@@ -460,6 +481,9 @@ export const updatePost = async (id: string, updates: Partial<CreateBlogPost>): 
       }
     }
 
+    // refresh feed setelah update
+    await supabaseAdmin.rpc('refresh_articles_feed');
+
     return mapArticleRowToBlogPost(data as ArticleRow);
   } catch (error) {
     return null
@@ -505,6 +529,9 @@ export const updatePostBySlug = async (slug: string, updates: Partial<CreateBlog
         await upsertTagsAndAttach(existingPost.id, updates.tags);
       }
     }
+
+    // refresh feed setelah update
+    await supabaseAdmin.rpc('refresh_articles_feed');
 
     return true
   } catch (error) {
