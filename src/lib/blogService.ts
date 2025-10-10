@@ -471,6 +471,15 @@ export const updatePostBySlug = async (slug: string, updates: Partial<CreateBlog
     console.log('📋 Found post:', { id: existingPost.id, title: existingPost.title })
 
     // Update post
+    console.log('🔄 Attempting to update post with data:', {
+      slug,
+      updates: {
+        ...updates,
+        updated_at: new Date().toISOString(),
+        published_at: updates.status === 'published' ? new Date().toISOString() : null
+      }
+    })
+
     const { data, error } = await supabase
       .from('blog_posts')
       .update({
@@ -481,17 +490,31 @@ export const updatePostBySlug = async (slug: string, updates: Partial<CreateBlog
       .eq('slug', slug)
       .select()
 
-    if (error) {
+    console.log('📊 Update response:', { 
+      data, 
+      error, 
+      hasData: !!data, 
+      hasError: !!error,
+      dataLength: data?.length || 0,
+      errorType: typeof error
+    })
+
+    // Check if there's an error object (even if it's empty)
+    if (error && Object.keys(error).length > 0) {
       console.error('❌ Error updating post by slug:', {
         message: error.message,
         details: error.details,
         hint: error.hint,
         code: error.code,
-        fullError: error
+        fullError: error,
+        errorType: typeof error,
+        errorKeys: Object.keys(error || {}),
+        errorString: JSON.stringify(error, null, 2)
       })
       return false
     }
 
+    // Check if we have data returned
     if (!data || data.length === 0) {
       console.error('❌ No data returned after update for slug:', slug)
       return false
