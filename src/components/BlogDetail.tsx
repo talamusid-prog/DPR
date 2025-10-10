@@ -62,13 +62,10 @@ const BlogDetail = () => {
       const postData = await getPostBySlug(slug);
       if (postData) {
         setPost(postData);
-        
-        // Load related posts, popular posts, and tags in parallel untuk performa yang lebih baik
-        await Promise.all([
-          loadRelatedPosts(postData),
-          loadPopularPosts(),
-          loadPopularTags()
-        ]);
+        // Muat data sekunder (related/popular/tags) non-blocking agar detail tampil dulu
+        loadRelatedPosts(postData);
+        loadPopularPosts();
+        loadPopularTags();
       } else {
         setError("Artikel tidak ditemukan");
       }

@@ -35,7 +35,8 @@ export const supabase = (() => {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
-        detectSessionInUrl: true
+        detectSessionInUrl: true,
+        storageKey: 'sb-user-auth'
       }
     })
   }
@@ -53,7 +54,8 @@ export const supabaseAdmin = (() => {
     supabaseAdminInstance = createClient(finalUrl, supabaseServiceRoleKey, {
       auth: {
         persistSession: false,
-        autoRefreshToken: false
+        autoRefreshToken: false,
+        storageKey: 'sb-admin-auth'
       }
     })
   }
