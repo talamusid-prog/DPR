@@ -1,40 +1,5 @@
-# Cache headers untuk optimasi performa
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 
-# Static assets dengan cache panjang
-*.js
-  Cache-Control: public, max-age=31536000, immutable
-
-*.css
-  Cache-Control: public, max-age=31536000, immutable
-
-*.png
-  Cache-Control: public, max-age=31536000, immutable
-
-*.jpg
-  Cache-Control: public, max-age=31536000, immutable
-
-*.jpeg
-  Cache-Control: public, max-age=31536000, immutable
-
-*.webp
-  Cache-Control: public, max-age=31536000, immutable
-
-*.svg
-  Cache-Control: public, max-age=31536000, immutable
-
-*.ico
-  Cache-Control: public, max-age=31536000, immutable
-
-# HTML files dengan cache pendek
-*.html
-  Cache-Control: public, max-age=3600
-
-# API routes
-/api/*
-  Cache-Control: public, max-age=300
-
-# Root HTML
 /
   Cache-Control: public, max-age=3600
