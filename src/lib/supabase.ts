@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 
 // Konfigurasi Supabase Zeabur
-const supabaseUrl = 'https://supabase-k8m2.zeabur.app'
+const supabaseUrl = 'https://supabase-k8m28006.zeabur.app'
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhb2JoYm1pdG95ZG94bmlmaWprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MTQ5MjEsImV4cCI6MjA3NDk5MDkyMX0.vyfqLYjaFTvTB4M2A3FGLihV2bN28kroqID3K5ROTFM'
 
 // Environment variables sebagai prioritas utama

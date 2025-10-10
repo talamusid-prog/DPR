@@ -6,7 +6,7 @@ Buat file `.env` di root directory dengan konten berikut:
 
 ```env
 # Supabase Configuration
-VITE_SUPABASE_URL=https://supabase-k8m2.zeabur.app
+VITE_SUPABASE_URL=https://supabase-k8m28006.zeabur.app
 VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhb2JoYm1pdG95ZG94bmlmaWprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MTQ5MjEsImV4cCI6MjA3NDk5MDkyMX0.vyfqLYjaFTvTB4M2A3FGLihV2bN28kroqID3K5ROTFM
 
 # Encryption Key for Local Storage
@@ -54,7 +54,7 @@ openssl rand -hex 32
 
 ```env
 # Supabase Configuration
-VITE_SUPABASE_URL=https://supabase-k8m2.zeabur.app
+VITE_SUPABASE_URL=https://supabase-k8m28006.zeabur.app
 VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhb2JoYm1pdG95ZG94bmlmaWprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MTQ5MjEsImV4cCI6MjA3NDk5MDkyMX0.vyfqLYjaFTvTB4M2A3FGLihV2bN28kroqID3K5ROTFM
 
 # Encryption Key for Local Storage
