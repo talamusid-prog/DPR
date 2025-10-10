@@ -80,36 +80,37 @@ export const getPublishedPosts = async (): Promise<BlogPost[]> => {
       return postsCache
     }
 
-    const { data, error } = await supabase
-      .from('articles_feed')
-      .select('id,title,slug,excerpt,thumbnail_url,author_name,published_at,created_at,updated_at,tags,categories')
+    // 1) Ambil langsung dari tabel articles (menghindari ketergantungan MV)
+    let mapped: BlogPost[] = []
+    const { data: articlesData, error: articlesErr } = await supabase
+      .from('articles')
+      .select('id,title,slug,excerpt,thumbnail_url,published_at,created_at,updated_at')
+      .eq('status', 'published')
       .order('published_at', { ascending: false })
+      .limit(20)
 
-    if (error) {
-      console.error('Error fetching posts:', error)
-      throw error
+    if (!articlesErr && articlesData) {
+      mapped = articlesData.map((row: ArticleRow) => mapArticleRowToBlogPost(row))
     }
 
-    let mapped = (data || []).map((row: ArticlesFeedRow) => mapArticlesFeedRowToBlogPost(row))
-
-    // Fallback: jika feed kosong, ambil langsung dari articles
+    // 2) Jika kosong, coba dari materialized view (jika sudah ter-refresh)
     if (!mapped.length) {
-      const { data: articlesData, error: artErr } = await supabase
-        .from('articles')
-        .select('id,title,slug,excerpt,thumbnail_url,published_at,created_at,updated_at')
-        .eq('status', 'published')
+      const { data: feedData } = await supabase
+        .from('articles_feed')
+        .select('id,title,slug,excerpt,thumbnail_url,author_name,published_at,created_at,updated_at,tags,categories')
         .order('published_at', { ascending: false })
-        .limit(10)
-      if (!artErr && articlesData) {
-        mapped = articlesData.map((row: ArticleRow) => mapArticleRowToBlogPost(row))
+      if (feedData) {
+        mapped = feedData.map((row: ArticlesFeedRow) => mapArticlesFeedRowToBlogPost(row))
       }
     }
 
-    // Update cache
-    postsCache = mapped
-    cacheTimestamp = now
+    // Update cache hanya jika ada data
+    if (mapped.length) {
+      postsCache = mapped
+      cacheTimestamp = now
+    }
 
-    return postsCache
+    return mapped
   } catch (error) {
     console.error('Error in getPublishedPosts:', error)
     return []
