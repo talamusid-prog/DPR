@@ -79,7 +79,7 @@ export const uploadImage = async (
 
   // Retry mechanism dengan timeout
   const maxRetries = 3
-  let lastError: any
+  let lastError: Error | null = null
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
@@ -98,7 +98,8 @@ export const uploadImage = async (
           upsert: false
         })
 
-      const { data, error } = await Promise.race([uploadPromise, timeoutPromise]) as any
+      const result = await Promise.race([uploadPromise, timeoutPromise])
+      const { data, error } = result as { data: { path: string } | null; error: Error | null }
 
       if (error) {
         console.error(`❌ Upload error (attempt ${attempt}):`, error)
