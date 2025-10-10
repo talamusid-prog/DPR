@@ -76,7 +76,7 @@ export const uploadWithFallback = async (file: File): Promise<UploadResult> => {
         const result = reader.result as string
         
         // Validasi format base64 yang ketat
-        if (!result || !result.startsWith('data:image/') || !result.includes(',')) {
+        if (!result || typeof result !== 'string' || !result.startsWith('data:image/') || !result.includes(',')) {
           reject(new Error('Invalid base64 format'))
           return
         }
@@ -86,8 +86,14 @@ export const uploadWithFallback = async (file: File): Promise<UploadResult> => {
         
         // Validasi base64 data setelah optimasi
         const base64Parts = optimizedBase64.split(',')
-        if (base64Parts.length !== 2) {
+        if (base64Parts.length !== 2 || !base64Parts[0] || !base64Parts[1]) {
           reject(new Error('Invalid base64 format after optimization'))
+          return
+        }
+        
+        // Validasi header
+        if (!base64Parts[0].includes('base64')) {
+          reject(new Error('Invalid base64 header'))
           return
         }
         
@@ -134,12 +140,17 @@ export const getOptimizedBase64Url = (base64Url: string, options?: {
   quality?: number
 }): string => {
   // Validasi base64 URL
-  if (!base64Url || !base64Url.startsWith('data:image/')) {
-    console.warn('Invalid base64 URL:', base64Url?.substring(0, 100) + '...')
+  if (!base64Url || typeof base64Url !== 'string') {
+    console.warn('Invalid base64 URL: not a string')
     return ''
   }
 
   // Validasi format base64
+  if (!base64Url.startsWith('data:image/')) {
+    console.warn('Invalid base64 URL: does not start with data:image/')
+    return ''
+  }
+
   if (!base64Url.includes(',')) {
     console.warn('Invalid base64 format - missing comma separator')
     return ''
@@ -155,6 +166,12 @@ export const getOptimizedBase64Url = (base64Url: string, options?: {
   // Validasi header
   if (!header.includes('base64')) {
     console.warn('Invalid base64 header:', header)
+    return ''
+  }
+
+  // Validasi data base64 tidak kosong
+  if (!data.trim()) {
+    console.warn('Invalid base64 data: empty data')
     return ''
   }
 

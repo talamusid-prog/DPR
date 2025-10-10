@@ -492,11 +492,21 @@ const BlogDetail = () => {
                     src={getBlogImageUrl(post.featured_image, { width: 800, height: 400, quality: 85 })}
                     alt={post.title}
                     className="w-full h-full object-cover"
-                    loading="lazy"
+                    loading="eager"
                     decoding="async"
                     onError={(e) => {
                       console.warn('Featured image load error:', e.currentTarget.src);
                       e.currentTarget.style.display = 'none';
+                    }}
+                    onLoad={(e) => {
+                      // Validate base64 images
+                      if (e.currentTarget.src.startsWith('data:image/')) {
+                        const src = e.currentTarget.src;
+                        if (!src.includes(',') || !src.includes('base64')) {
+                          console.warn('Invalid base64 featured image, hiding');
+                          e.currentTarget.style.display = 'none';
+                        }
+                      }
                     }}
                   />
                   {/* Overlay gradient for better text readability */}
