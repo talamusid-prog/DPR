@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Filter, Search, MapPin, User, Calendar, Grid, List } from "lucide-react";
 import { supabase } from "../lib/supabase";
-import { getPortfolioImageWithFallback } from "../lib/portfolioImageService";
+// Portfolio image service removed - using gallery service instead
 import { getGalleryImageUrl } from "../lib/galleryService";
 import type { Gallery } from "../lib/supabase";
 import { Helmet } from "react-helmet-async";

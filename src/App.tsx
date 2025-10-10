@@ -13,11 +13,10 @@ import Blog from "./pages/Blog";
 import BlogDetail from "./components/BlogDetail";
 import CreateArticle from "./pages/CreateArticle";
 import EditArticle from "./pages/EditArticle";
-import AdminPortfolio from "./pages/AdminPortfolio";
 import AdminGallery from "./pages/AdminGallery";
 import AdminAspirasi from "./pages/AdminAspirasi";
 import AdminKalenderPage from "./pages/AdminKalenderPage";
-import PortfolioDetail from "./components/PortfolioDetail";
+import BlogDetail from "./components/BlogDetail";
 import Dokumentasi from "./pages/Dokumentasi";
 import NotFound from "./pages/NotFound";
 import Registration from "./pages/Registration";
@@ -43,7 +42,6 @@ const App = () => {
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/admin" element={<Admin />} />
-                <Route path="/admin-portfolio" element={<AdminPortfolio />} />
                 <Route path="/admin-gallery" element={<AdminGallery />} />
                 <Route path="/admin-aspirasi" element={<AdminAspirasi />} />
                 <Route path="/admin-kalender" element={<AdminKalenderPage />} />
@@ -52,7 +50,7 @@ const App = () => {
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<BlogDetail />} />
                 <Route path="/dokumentasi" element={<Dokumentasi />} />
-                <Route path="/dokumentasi/:slug" element={<PortfolioDetail />} />
+                <Route path="/dokumentasi/:slug" element={<BlogDetail />} />
                 <Route path="/registration" element={<Registration />} />
                 <Route path="/aspirasi" element={<AspirasiPage />} />
                 <Route path="/kalender" element={<KalenderPage />} />

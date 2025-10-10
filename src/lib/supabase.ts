@@ -118,9 +118,7 @@ export interface CreateGallery {
   featured: boolean
 }
 
-// Alias untuk backward compatibility
-export type Portfolio = Gallery
-export type CreatePortfolio = CreateGallery
+// Portfolio types removed - using Gallery instead
 
 // Types untuk Gallery
 export interface GalleryImage {
