@@ -1,7 +1,7 @@
-// Service Worker untuk optimasi cache dan performa
-const CACHE_NAME = 'dpr-ri-v2';
-const STATIC_CACHE = 'static-v2';
-const DYNAMIC_CACHE = 'dynamic-v2';
+// Service Worker untuk optimasi cache dan performa (lebih konservatif)
+const CACHE_NAME = 'dpr-ri-v3';
+const STATIC_CACHE = 'static-v3';
+const DYNAMIC_CACHE = 'dynamic-v3';
 
 // Assets yang akan di-cache
 const STATIC_ASSETS = [
@@ -45,59 +45,69 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch event
+// Util: batasi jumlah item dalam cache agar tidak tumbuh tanpa batas
+async function limitCacheSize(cacheName, maxItems) {
+  const cache = await caches.open(cacheName);
+  const keys = await cache.keys();
+  if (keys.length > maxItems) {
+    await cache.delete(keys[0]);
+    await limitCacheSize(cacheName, maxItems);
+  }
+}
+
+// Fetch event: strategi lebih aman untuk mobile (network-first untuk halaman)
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
   // Skip non-GET requests
-  if (request.method !== 'GET') {
+  if (request.method !== 'GET') return;
+
+  // Skip external requests — jangan cache cross-origin di SW ini
+  if (url.origin !== location.origin) return;
+
+  // Network-first untuk dokumen (HTML/navigasi) agar menu tidak stale
+  if (request.destination === 'document' || request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((networkResponse) => {
+          const copy = networkResponse.clone();
+          caches.open(DYNAMIC_CACHE).then((cache) => {
+            cache.put(request, copy);
+            limitCacheSize(DYNAMIC_CACHE, 30);
+          });
+          return networkResponse;
+        })
+        .catch(async () => {
+          const cached = await caches.match(request);
+          if (cached) return cached;
+          // fallback ke root jika tidak ada cache
+          return caches.match('/');
+        })
+    );
     return;
   }
 
-  // Skip external requests
-  if (url.origin !== location.origin) {
+  // Stale-while-revalidate untuk assets (JS/CSS/Images), plus pembatas ukuran cache
+  if (
+    request.destination === 'script' ||
+    request.destination === 'style' ||
+    request.destination === 'image'
+  ) {
+    event.respondWith(
+      caches.open(STATIC_CACHE).then(async (cache) => {
+        const cached = await cache.match(request);
+        const fetchPromise = fetch(request)
+          .then((networkResponse) => {
+            cache.put(request, networkResponse.clone());
+            limitCacheSize(STATIC_CACHE, 60);
+            return networkResponse;
+          })
+          .catch(() => cached);
+        return cached || fetchPromise;
+      })
+    );
     return;
-  }
-
-  // Cache strategy untuk static assets
-  if (request.destination === 'image' || 
-      request.destination === 'script' || 
-      request.destination === 'style') {
-    event.respondWith(
-      caches.match(request)
-        .then((response) => {
-          if (response) {
-            return response;
-          }
-          return fetch(request).then((fetchResponse) => {
-            const responseClone = fetchResponse.clone();
-            caches.open(STATIC_CACHE).then((cache) => {
-              cache.put(request, responseClone);
-            });
-            return fetchResponse;
-          });
-        })
-    );
-  }
-
-  // Cache strategy untuk HTML pages
-  if (request.destination === 'document') {
-    event.respondWith(
-      caches.match(request)
-        .then((response) => {
-          if (response) {
-            return response;
-          }
-          return fetch(request).then((fetchResponse) => {
-            const responseClone = fetchResponse.clone();
-            caches.open(DYNAMIC_CACHE).then((cache) => {
-              cache.put(request, responseClone);
-            });
-            return fetchResponse;
-          });
-        })
-    );
   }
 });
 
