@@ -194,6 +194,10 @@ const Blog = () => {
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                 loading="lazy"
                                 decoding="async"
+                                onError={(e) => {
+                                  console.warn('Image load error:', e.currentTarget.src);
+                                  e.currentTarget.src = `/berita${index + 1}.jpg`;
+                                }}
                               />
                         {/* Dark Overlay */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
@@ -262,6 +266,10 @@ const Blog = () => {
                         src={post.featured_image ? getBlogImageUrl(post.featured_image, { width: 80, height: 80, quality: 80 }) : `/berita${index + 2}.jpg`}
                         alt={post.title}
                         className="w-20 h-20 object-cover rounded-lg"
+                        onError={(e) => {
+                          console.warn('Sidebar image load error:', e.currentTarget.src);
+                          e.currentTarget.src = `/berita${index + 2}.jpg`;
+                        }}
                       />
                     </div>
                     

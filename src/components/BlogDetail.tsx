@@ -494,6 +494,10 @@ const BlogDetail = () => {
                     className="w-full h-full object-cover"
                     loading="lazy"
                     decoding="async"
+                    onError={(e) => {
+                      console.warn('Featured image load error:', e.currentTarget.src);
+                      e.currentTarget.style.display = 'none';
+                    }}
                   />
                   {/* Overlay gradient for better text readability */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>

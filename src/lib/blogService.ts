@@ -114,6 +114,12 @@ export const getBlogImageUrl = (imagePath: string, options?: {
   height?: number
   quality?: number
 }): string => {
+  // Validasi input
+  if (!imagePath) {
+    console.warn('Empty image path provided')
+    return ''
+  }
+
   // Jika base64, gunakan fallback service
   if (imagePath.startsWith('data:image/')) {
     return getOptimizedBase64Url(imagePath, options)

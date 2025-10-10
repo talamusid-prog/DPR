@@ -82,13 +82,13 @@ export const getOptimizedBase64Url = (base64Url: string, options?: {
   height?: number
   quality?: number
 }): string => {
+  // Validasi base64 URL
+  if (!base64Url || !base64Url.startsWith('data:image/')) {
+    console.warn('Invalid base64 URL:', base64Url)
+    return base64Url
+  }
+
   // Untuk base64, kita tidak bisa mengoptimasi lebih lanjut
-  // Tapi kita bisa menambahkan parameter untuk tracking
-  const params = new URLSearchParams()
-  if (options?.width) params.append('w', options.width.toString())
-  if (options?.height) params.append('h', options.height.toString())
-  if (options?.quality) params.append('q', options.quality.toString())
-  
-  const queryString = params.toString()
-  return queryString ? `${base64Url}?${queryString}` : base64Url
+  // Return base64 URL as is tanpa parameter tambahan
+  return base64Url
 }
