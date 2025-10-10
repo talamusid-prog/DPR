@@ -8,6 +8,8 @@ import { HelmetProvider } from "react-helmet-async";
 import { Analytics } from "@vercel/analytics/react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { useTheme } from "./hooks/useTheme";
+import { useMobileOptimization } from "./lib/mobileOptimization";
+import { useMobileImageOptimization } from "./lib/imageOptimizationMobile";
 
 // Critical components - load immediately
 import Index from "./pages/Index";
@@ -41,6 +43,10 @@ const queryClient = new QueryClient();
 const App = () => {
   // Initialize global theme
   useTheme();
+  
+  // Mobile optimization
+  useMobileOptimization();
+  useMobileImageOptimization();
 
   return (
     <ErrorBoundary>

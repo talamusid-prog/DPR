@@ -32,7 +32,9 @@ export default defineConfig(({ mode }) => ({
           ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select'],
           editor: ['@ckeditor/ckeditor5-react', '@ckeditor/ckeditor5-build-classic'],
           supabase: ['@supabase/supabase-js'],
-          utils: ['date-fns', 'clsx', 'class-variance-authority']
+          utils: ['date-fns', 'clsx', 'class-variance-authority'],
+          // Mobile-specific chunks
+          mobile: ['src/lib/mobileOptimization.ts', 'src/lib/imageOptimizationMobile.ts']
         },
         // Optimasi chunk naming
         chunkFileNames: 'assets/[name]-[hash].js',
