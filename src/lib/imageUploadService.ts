@@ -130,7 +130,19 @@ export const uploadImage = async (
 
       const publicUrl = urlData.publicUrl
 
-      console.log('✅ Upload berhasil:', {
+      // Test akses file untuk memastikan URL dapat diakses
+      try {
+        const testResponse = await fetch(publicUrl, { method: 'HEAD' })
+        if (!testResponse.ok) {
+          console.warn('⚠️ File uploaded but not accessible, using fallback...')
+          throw new Error(`File not accessible: ${testResponse.status} ${testResponse.statusText}`)
+        }
+      } catch (testError) {
+        console.warn('⚠️ File accessibility test failed, using fallback...')
+        throw new Error(`File accessibility test failed: ${testError.message}`)
+      }
+
+      console.log('✅ Upload berhasil dan file dapat diakses:', {
         path: data.path,
         url: publicUrl,
         attempts: attempt
