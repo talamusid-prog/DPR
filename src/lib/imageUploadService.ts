@@ -95,7 +95,7 @@ export const uploadImage = async (
         .from(finalConfig.bucket)
         .upload(fileName, file, {
           cacheControl: '3600',
-          upsert: false
+          upsert: true // Allow overwrite existing files
         })
 
       const result = await Promise.race([uploadPromise, timeoutPromise])

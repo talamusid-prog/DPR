@@ -446,6 +446,31 @@ export const updatePostBySlug = async (slug: string, updates: Partial<CreateBlog
   try {
     console.log('🔄 Updating post by slug:', { slug, updates })
     
+    // Cek apakah post ada terlebih dahulu
+    const { data: existingPost, error: checkError } = await supabase
+      .from('blog_posts')
+      .select('id, title, slug')
+      .eq('slug', slug)
+      .single()
+
+    if (checkError) {
+      console.error('❌ Error checking post existence:', {
+        message: checkError.message,
+        details: checkError.details,
+        hint: checkError.hint,
+        code: checkError.code
+      })
+      return false
+    }
+
+    if (!existingPost) {
+      console.error('❌ Post not found with slug:', slug)
+      return false
+    }
+
+    console.log('📋 Found post:', { id: existingPost.id, title: existingPost.title })
+
+    // Update post
     const { data, error } = await supabase
       .from('blog_posts')
       .update({
@@ -461,13 +486,14 @@ export const updatePostBySlug = async (slug: string, updates: Partial<CreateBlog
         message: error.message,
         details: error.details,
         hint: error.hint,
-        code: error.code
+        code: error.code,
+        fullError: error
       })
       return false
     }
 
     if (!data || data.length === 0) {
-      console.error('❌ No post found with slug:', slug)
+      console.error('❌ No data returned after update for slug:', slug)
       return false
     }
 
@@ -476,7 +502,8 @@ export const updatePostBySlug = async (slug: string, updates: Partial<CreateBlog
   } catch (error) {
     console.error('❌ Error in updatePostBySlug:', {
       message: error instanceof Error ? error.message : 'Unknown error',
-      error: error
+      error: error,
+      stack: error instanceof Error ? error.stack : undefined
     })
     return false
   }
