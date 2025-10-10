@@ -110,6 +110,15 @@ DO $$ BEGIN
   END IF;
 END $$;
 
+-- Ensure SELECT privilege is granted so RLS policies can take effect
+DO $$ BEGIN
+  -- Articles require SELECT for anon/authenticated so RLS policies apply
+  PERFORM 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='articles';
+  IF FOUND THEN
+    GRANT SELECT ON public.articles TO anon, authenticated;
+  END IF;
+END $$;
+
 -- Optional: tighten default privileges (no-op if already set by Supabase)
 -- REVOKE ALL ON public.articles, public.categories, public.tags, public.article_categories, public.article_tags FROM anon, authenticated;
 -- GRANT SELECT ON public.categories, public.tags, public.article_categories, public.article_tags TO anon, authenticated;
