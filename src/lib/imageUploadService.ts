@@ -130,23 +130,19 @@ export const uploadImage = async (
 
       const publicUrl = urlData.publicUrl
 
-      // Test akses file untuk memastikan URL dapat diakses
-      try {
-        const testResponse = await fetch(publicUrl, { method: 'HEAD' })
-        if (!testResponse.ok) {
-          // File tidak dapat diakses, gunakan fallback tanpa error logging
-          throw new Error(`File not accessible: ${testResponse.status}`)
-        }
-      } catch (testError) {
-        // File accessibility test gagal, gunakan fallback tanpa error logging
-        throw new Error(`File accessibility test failed`)
+    // Test akses file untuk memastikan URL dapat diakses
+    try {
+      const testResponse = await fetch(publicUrl, { method: 'HEAD' })
+      if (!testResponse.ok) {
+        // File tidak dapat diakses, gunakan fallback
+        throw new Error(`File not accessible: ${testResponse.status}`)
       }
+    } catch (testError) {
+      // File accessibility test gagal, gunakan fallback
+      throw new Error(`File accessibility test failed`)
+    }
 
-      console.log('✅ Upload berhasil dan file dapat diakses:', {
-        path: data.path,
-        url: publicUrl,
-        attempts: attempt
-      })
+      // Upload berhasil tanpa log berlebihan
 
       return {
         success: true,
@@ -159,14 +155,12 @@ export const uploadImage = async (
       
       if (attempt < maxRetries) {
         const delay = Math.pow(2, attempt) * 1000
-        console.log(`⏳ Waiting ${delay}ms before retry...`)
         await new Promise(resolve => setTimeout(resolve, delay))
       }
     }
   }
 
   // Jika semua retry gagal, coba fallback ke base64
-  console.log('🔄 Using base64 fallback mechanism...')
   
   try {
     // Convert file to base64 as fallback
@@ -177,14 +171,13 @@ export const uploadImage = async (
       reader.readAsDataURL(file)
     })
 
-    console.log('✅ Image uploaded with base64 fallback')
+    // Image uploaded with base64 fallback
     return {
       success: true,
       url: base64,
       path: 'base64-fallback'
     }
   } catch (fallbackError) {
-    console.error('❌ Base64 fallback failed:', fallbackError)
     return {
       success: false,
       error: `Upload gagal: ${lastError?.message || 'Unknown error'}`

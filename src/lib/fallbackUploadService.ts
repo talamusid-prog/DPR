@@ -63,11 +63,11 @@ export const compressImage = (file: File, maxWidth: number = 600, quality: numbe
 // Fungsi untuk upload dengan fallback ke base64
 export const uploadWithFallback = async (file: File): Promise<UploadResult> => {
   try {
-    console.log('📤 Uploading with fallback mechanism...')
+    // Uploading with fallback mechanism
     
     // Compress image dengan setting yang lebih agresif untuk performa
     const compressedFile = await compressImage(file, 600, 0.7) // Lebih kecil dan lebih terkompresi
-    console.log(`📊 Image compressed: ${file.size} -> ${compressedFile.size} bytes`)
+    // Image compressed
     
     // Convert to base64 dengan optimasi untuk performa yang lebih baik
     const base64 = await new Promise<string>((resolve, reject) => {
@@ -90,7 +90,7 @@ export const uploadWithFallback = async (file: File): Promise<UploadResult> => {
       reader.readAsDataURL(compressedFile)
     })
 
-    console.log('✅ Image converted to optimized base64')
+    // Image converted to optimized base64
     return {
       success: true,
       url: base64,
