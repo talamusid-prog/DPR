@@ -129,7 +129,7 @@ export const uploadImage = async (
     try {
       const testResponse = await fetch(publicUrl, { method: 'HEAD' })
       if (!testResponse.ok) {
-        // File tidak dapat diakses, gunakan fallback
+        // File tidak dapat diakses karena RLS, gunakan fallback
         throw new Error(`File not accessible: ${testResponse.status}`)
       }
     } catch (testError) {
