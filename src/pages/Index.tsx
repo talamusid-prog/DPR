@@ -3,7 +3,7 @@ import Hero from "@/components/Hero";
 import ArtikelTerbaru from "@/components/ArtikelTerbaru";
 import LayananAspirasi from "@/components/LayananAspirasi";
 import Blog from "@/components/Blog";
-import Gallery from "@/components/Portfolio";
+// Gallery component removed - using Blog component instead
 import Process from "@/components/Process";
 import PricingHero from "@/components/PricingHero";
 import WhyWebsite from "@/components/WhyWebsite";
@@ -25,7 +25,7 @@ const Index = () => {
         <PricingHero />
         <WhyWebsite />
         <WebsiteTypes />
-        <Gallery />
+        {/* Gallery component removed */}
         <Blog />
         <AnggotaKomunitas />
       </main>
