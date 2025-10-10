@@ -1,4 +1,68 @@
-import { supabase, BlogPost, CreateBlogPost } from './supabase'
+import { supabase, BlogPost, CreateBlogPost, supabaseAdmin } from './supabase'
+
+// Row types for Supabase queries to avoid `any`
+type ArticlesFeedRow = {
+  id: number | string
+  title: string
+  slug: string
+  excerpt: string | null
+  thumbnail_url: string | null
+  author_name: string | null
+  published_at: string | null
+  created_at: string
+  updated_at: string
+  tags: string[] | null
+  categories: string[] | null
+}
+
+type ArticleRow = {
+  id: number | string
+  title: string
+  slug: string
+  content?: string | null
+  excerpt: string | null
+  thumbnail_url: string | null
+  author_id?: number | string | null
+  published_at: string | null
+  created_at: string
+  updated_at: string
+  status?: 'draft' | 'published'
+}
+
+// Helpers untuk memetakan row DB ke BlogPost
+const mapArticlesFeedRowToBlogPost = (row: ArticlesFeedRow): BlogPost => ({
+  id: String(row.id),
+  title: row.title,
+  content: '',
+  excerpt: row.excerpt || '',
+  slug: row.slug,
+  featured_image: row.thumbnail_url || '',
+  alt_text: '',
+  author: row.author_name || '',
+  published_at: row.published_at || '',
+  created_at: row.created_at,
+  updated_at: row.updated_at,
+  tags: row.tags || [],
+  status: 'published',
+  views: 0
+})
+
+const mapArticleRowToBlogPost = (row: ArticleRow): BlogPost => ({
+  id: String(row.id),
+  title: row.title,
+  content: row.content || '',
+  excerpt: row.excerpt || '',
+  slug: row.slug,
+  featured_image: row.thumbnail_url || '',
+  alt_text: '',
+  author: '',
+  published_at: row.published_at || '',
+  created_at: row.created_at,
+  updated_at: row.updated_at,
+  tags: [],
+  status: (row.status || 'published') as 'draft' | 'published',
+  views: 0
+})
 import { uploadImage, getOptimizedImageUrl, UploadResult } from './imageUploadService'
 import { uploadWithFallback, getOptimizedBase64Url } from './fallbackUploadService'
 
@@ -17,9 +81,8 @@ export const getPublishedPosts = async (): Promise<BlogPost[]> => {
     }
 
     const { data, error } = await supabase
-      .from('blog_posts')
-      .select('*')
-      .eq('status', 'published')
+      .from('articles_feed')
+      .select('id,title,slug,excerpt,thumbnail_url,author_name,published_at,created_at,updated_at,tags,categories')
       .order('published_at', { ascending: false })
 
     if (error) {
@@ -28,7 +91,7 @@ export const getPublishedPosts = async (): Promise<BlogPost[]> => {
     }
 
     // Update cache
-    postsCache = data || []
+    postsCache = (data || []).map((row: ArticlesFeedRow) => mapArticlesFeedRowToBlogPost(row))
     cacheTimestamp = now
 
     return postsCache
@@ -137,10 +200,9 @@ export const getPopularPosts = async (limit: number = 6): Promise<BlogPost[]> =>
     }
 
     const { data, error } = await supabase
-      .from('blog_posts')
-      .select('*')
-      .eq('status', 'published')
-      .order('views', { ascending: false })
+      .from('articles_feed')
+      .select('id,title,slug,excerpt,thumbnail_url,author_name,published_at,created_at,updated_at,tags,categories')
+      .order('published_at', { ascending: false })
       .limit(limit)
 
     if (error) {
@@ -149,7 +211,7 @@ export const getPopularPosts = async (limit: number = 6): Promise<BlogPost[]> =>
     }
 
     // Update cache
-    popularPostsCache = data || []
+    popularPostsCache = (data || []).map((row: ArticlesFeedRow) => mapArticlesFeedRowToBlogPost(row))
     popularCacheTimestamp = now
 
     return popularPostsCache
@@ -159,12 +221,45 @@ export const getPopularPosts = async (limit: number = 6): Promise<BlogPost[]> =>
   }
 }
 
+const toSlug = (text: string): string => {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
+};
+
+const upsertTagsAndAttach = async (articleId: string | number, tags: string[] | undefined) => {
+  if (!tags || tags.length === 0) return;
+  const tagRows = tags.map((name) => ({ name, slug: toSlug(name) }));
+  const { error: upsertErr } = await supabaseAdmin
+    .from('tags')
+    .upsert(tagRows, { onConflict: 'slug' });
+  if (upsertErr) throw upsertErr;
+
+  const slugs = tagRows.map(t => t.slug);
+  const { data: tagIds, error: selErr } = await supabaseAdmin
+    .from('tags')
+    .select('id, slug')
+    .in('slug', slugs);
+  if (selErr) throw selErr;
+
+  const linkRows = (tagIds || []).map(t => ({ article_id: articleId, tag_id: t.id }));
+  if (linkRows.length > 0) {
+    const { error: linkErr } = await supabaseAdmin
+      .from('article_tags')
+      .insert(linkRows);
+    if (linkErr) throw linkErr;
+  }
+};
+
 // Fungsi untuk mendapatkan semua artikel (termasuk draft) - untuk admin
 export const getAllPosts = async (): Promise<BlogPost[]> => {
   try {
-    const { data, error } = await supabase
-      .from('blog_posts')
-      .select('*')
+    const { data, error } = await supabaseAdmin
+      .from('articles')
+      .select('id,title,slug,excerpt,thumbnail_url,author_id,published_at,created_at,updated_at,status')
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -172,7 +267,7 @@ export const getAllPosts = async (): Promise<BlogPost[]> => {
       throw error
     }
 
-    return data || []
+    return (data || []).map((row: ArticleRow) => mapArticleRowToBlogPost(row))
   } catch (error) {
     console.error('Error in getAllPosts:', error)
     return []
@@ -195,9 +290,9 @@ export const getPostBySlug = async (slug: string): Promise<BlogPost | null> => {
     }
 
     const { data, error } = await supabase
-      .from('blog_posts')
-      .select('*')
-      .eq('slug', slug)
+      .from('articles')
+      .select('id,title,slug,content,excerpt,thumbnail_url,author_id,published_at,created_at,updated_at,status')
+      .eq('slug', slug.toLowerCase())
       .eq('status', 'published')
       .single()
 
@@ -207,16 +302,12 @@ export const getPostBySlug = async (slug: string): Promise<BlogPost | null> => {
     }
 
     // Update cache
-    if (data) {
-      postDetailCache.set(slug, { post: data, timestamp: now })
-      
-      // Increment views count (non-blocking)
-      incrementViews(data.id).catch(error => {
-        console.warn('Failed to increment views (non-critical):', error)
-      })
-    }
+    if (!data) return null
 
-    return data
+    const mapped: BlogPost = mapArticleRowToBlogPost(data as ArticleRow)
+
+    postDetailCache.set(slug, { post: mapped, timestamp: now })
+    return mapped
   } catch (error) {
     console.error('Error in getPostBySlug:', error)
     return null
@@ -226,10 +317,10 @@ export const getPostBySlug = async (slug: string): Promise<BlogPost | null> => {
 // Fungsi untuk mendapatkan artikel berdasarkan slug (untuk admin - semua status)
 export const getPostBySlugAdmin = async (slug: string): Promise<BlogPost | null> => {
   try {
-    const { data, error } = await supabase
-      .from('blog_posts')
-      .select('*')
-      .eq('slug', slug)
+    const { data, error } = await supabaseAdmin
+      .from('articles')
+      .select('id,title,slug,content,excerpt,thumbnail_url,author_id,published_at,created_at,updated_at,status')
+      .eq('slug', slug.toLowerCase())
       .single()
 
     if (error) {
@@ -237,7 +328,8 @@ export const getPostBySlugAdmin = async (slug: string): Promise<BlogPost | null>
       return null
     }
 
-    return data
+    if (!data) return null
+    return mapArticleRowToBlogPost(data as ArticleRow)
   } catch (error) {
     console.error('Error in getPostBySlugAdmin:', error)
     return null
@@ -245,56 +337,43 @@ export const getPostBySlugAdmin = async (slug: string): Promise<BlogPost | null>
 }
 
 // Fungsi untuk increment views
-export const incrementViews = async (postId: string): Promise<void> => {
-  try {
-    // Ambil data artikel saat ini
-    const { data: currentPost, error: fetchError } = await supabase
-      .from('blog_posts')
-      .select('views')
-      .eq('id', postId)
-      .single()
-
-    if (fetchError) {
-      console.error('Error fetching current views:', fetchError)
-      return
-    }
-
-    // Increment views secara manual
-    const newViews = (currentPost?.views || 0) + 1
-    
-    const { error: updateError } = await supabase
-      .from('blog_posts')
-      .update({ views: newViews })
-      .eq('id', postId)
-
-    if (updateError) {
-      console.error('Error updating views:', updateError)
-    }
-  } catch (error) {
-    console.error('Error in incrementViews:', error)
-  }
+export const incrementViews = async (_postId: string): Promise<void> => {
+  // No-op: skema baru tidak memiliki kolom views
+  return
 }
 
 // Fungsi untuk membuat artikel baru
 export const createPost = async (post: CreateBlogPost): Promise<BlogPost | null> => {
   try {
-    const { data, error } = await supabase
-      .from('blog_posts')
-      .insert([{
-        ...post,
-        published_at: post.status === 'published' ? new Date().toISOString() : null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }])
-      .select()
-      .single()
+    const slug = post.slug?.trim() || toSlug(post.title);
+    const insertData = {
+      title: post.title.trim(),
+      slug,
+      content: post.content?.trim() || '',
+      excerpt: post.excerpt?.trim() || '',
+      thumbnail_url: post.featured_image || '',
+      status: post.status || 'draft',
+      author_id: null as number | null,
+      published_at: (post.status === 'published') ? new Date().toISOString() : null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
 
-    if (error) {
-      console.error('Error creating post:', error)
-      throw error
+    const { data, error } = await supabaseAdmin
+      .from('articles')
+      .insert([insertData])
+      .select()
+      .single();
+
+    if (error) throw error;
+    if (!data) return null;
+
+    // attach tags if any
+    if (post.tags && post.tags.length > 0) {
+      await upsertTagsAndAttach(data.id, post.tags);
     }
 
-    return data
+    return mapArticleRowToBlogPost(data as ArticleRow);
   } catch (error) {
     console.error('Error in createPost:', error)
     return null
@@ -304,132 +383,85 @@ export const createPost = async (post: CreateBlogPost): Promise<BlogPost | null>
 // Fungsi untuk membuat artikel baru dengan slug otomatis
 export const createPostWithSlug = async (post: Omit<CreateBlogPost, 'slug'>): Promise<boolean> => {
   try {
-    console.log('🚀 Memulai proses penyimpanan artikel...');
-    console.log('📝 Input data:', {
-      title: post.title,
-      contentLength: post.content?.length || 0,
-      author: post.author,
-      status: post.status
-    });
-    
-    // Validasi input
-    if (!post.title || !post.title.trim()) {
-      throw new Error('Judul artikel tidak boleh kosong');
-    }
-    
-    if (!post.content || !post.content.trim()) {
-      throw new Error('Konten artikel tidak boleh kosong');
-    }
-    
-    if (!post.author || !post.author.trim()) {
-      throw new Error('Author tidak boleh kosong');
-    }
-    
-    // Generate slug from title
-    const slug = post.title
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim();
+    if (!post.title?.trim()) throw new Error('Judul artikel tidak boleh kosong');
+    if (!post.content?.trim()) throw new Error('Konten artikel tidak boleh kosong');
 
-    if (!slug) {
-      throw new Error('Tidak dapat menghasilkan slug dari judul');
-    }
-
-    console.log('🔗 Slug yang dihasilkan:', slug);
-
-    // Data yang akan disimpan
-    const postData = {
+    const slug = toSlug(post.title);
+    const insertData = {
       title: post.title.trim(),
+      slug,
       content: post.content.trim(),
       excerpt: post.excerpt?.trim() || '',
-      slug,
-      featured_image: post.featured_image || '',
-      alt_text: post.alt_text?.trim() || '',
-      author: post.author.trim(),
-      tags: post.tags || [],
+      thumbnail_url: post.featured_image || '',
       status: post.status || 'draft',
-      published_at: post.status === 'published' ? new Date().toISOString() : null,
+      author_id: null as number | null,
+      published_at: (post.status === 'published') ? new Date().toISOString() : null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
 
-    console.log('💾 Data yang akan disimpan ke database:', {
-      title: postData.title,
-      slug: postData.slug,
-      status: postData.status,
-      author: postData.author,
-      contentLength: postData.content.length,
-      tags: postData.tags,
-      created_at: postData.created_at
-    });
-
-    console.log('📡 Mengirim request ke Supabase...');
-    const { data, error } = await supabase
-      .from('blog_posts')
-      .insert([postData])
+    const { data, error } = await supabaseAdmin
+      .from('articles')
+      .insert([insertData])
       .select()
+      .single();
 
-    if (error) {
-      console.error('❌ Error creating post with slug:', error);
-      console.error('🔍 Error details:', {
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code
-      });
-      
-      // Tambahan debugging untuk RLS issues
-      if (error.code === '42501') {
-        console.error('🚨 RLS Policy Error: Kemungkinan Row Level Security memblokir operasi');
-        console.error('💡 Solusi: Jalankan script fix_rls_policies.sql di Supabase SQL Editor');
-      }
-      
-      throw error;
+    if (error) throw error;
+
+    if (data && post.tags?.length) {
+      await upsertTagsAndAttach(data.id, post.tags);
     }
 
-    console.log('✅ Artikel berhasil disimpan:', data);
     return true;
   } catch (error) {
-    console.error('💥 Error in createPostWithSlug:', error);
-    if (error instanceof Error) {
-      console.error('📋 Error message:', error.message);
-    }
+    console.error('Error in createPostWithSlug:', error);
     return false;
   }
 }
 
+type ArticleUpdate = Partial<{
+  title: string
+  content: string
+  excerpt: string
+  thumbnail_url: string
+  status: 'draft' | 'published'
+  updated_at: string
+  published_at: string | null
+}>
+
 // Fungsi untuk mengupdate artikel berdasarkan ID
 export const updatePost = async (id: string, updates: Partial<CreateBlogPost>): Promise<BlogPost | null> => {
   try {
-    // Updating post by ID
-    
-    const { data, error } = await supabase
-      .from('blog_posts')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString(),
-        published_at: updates.status === 'published' ? new Date().toISOString() : null
-      })
+    const updateData: ArticleUpdate = {
+      ...('title' in updates ? { title: updates.title?.trim() || '' } : {}),
+      ...('content' in updates ? { content: updates.content?.trim() || '' } : {}),
+      ...('excerpt' in updates ? { excerpt: updates.excerpt?.trim() || '' } : {}),
+      ...('featured_image' in updates ? { thumbnail_url: updates.featured_image || '' } : {}),
+      ...('status' in updates && updates.status ? { status: updates.status } : {}),
+      updated_at: new Date().toISOString(),
+      ...(updates.status === 'published' ? { published_at: new Date().toISOString() } : {})
+    };
+
+    const { data, error } = await supabaseAdmin
+      .from('articles')
+      .update(updateData)
       .eq('id', id)
       .select()
-      .single()
+      .single();
 
-    if (error) {
-      // Error updating post
-      return null
+    if (error) return null;
+    if (!data) return null;
+
+    // sync tags if provided
+    if (updates.tags) {
+      await supabaseAdmin.from('article_tags').delete().eq('article_id', data.id);
+      if (updates.tags.length > 0) {
+        await upsertTagsAndAttach(data.id, updates.tags);
+      }
     }
 
-    if (!data) {
-      // No post found with ID
-      return null
-    }
-
-    // Post updated successfully
-    return data
+    return mapArticleRowToBlogPost(data as ArticleRow);
   } catch (error) {
-    // Error in updatePost
     return null
   }
 }
@@ -437,58 +469,45 @@ export const updatePost = async (id: string, updates: Partial<CreateBlogPost>): 
 // Fungsi untuk mengupdate artikel berdasarkan slug
 export const updatePostBySlug = async (slug: string, updates: Partial<CreateBlogPost>): Promise<boolean> => {
   try {
-    // Updating post by slug
-    
-    // Cek apakah post ada terlebih dahulu
-    const { data: existingPost, error: checkError } = await supabase
-      .from('blog_posts')
+    const { data: existingPost, error: checkError } = await supabaseAdmin
+      .from('articles')
       .select('id, title, slug')
-      .eq('slug', slug)
-      .single()
+      .eq('slug', slug.toLowerCase())
+      .single();
 
-    if (checkError) {
-      // Error checking post existence
+    if (checkError || !existingPost) {
       return false
     }
 
-    if (!existingPost) {
-      // Post not found with slug
+    const updateData: ArticleUpdate = {
+      ...('title' in updates ? { title: updates.title?.trim() || '' } : {}),
+      ...('content' in updates ? { content: updates.content?.trim() || '' } : {}),
+      ...('excerpt' in updates ? { excerpt: updates.excerpt?.trim() || '' } : {}),
+      ...('featured_image' in updates ? { thumbnail_url: updates.featured_image || '' } : {}),
+      ...('status' in updates && updates.status ? { status: updates.status } : {}),
+      updated_at: new Date().toISOString(),
+      ...(updates.status === 'published' ? { published_at: new Date().toISOString() } : {})
+    };
+
+    const { error } = await supabaseAdmin
+      .from('articles')
+      .update(updateData)
+      .eq('slug', slug.toLowerCase());
+
+    if (error) {
       return false
     }
 
-    // Found post
-
-    // Update post
-    // Attempting to update post with data
-
-    const { data, error } = await supabase
-      .from('blog_posts')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString(),
-        published_at: updates.status === 'published' ? new Date().toISOString() : null
-      })
-      .eq('slug', slug)
-      .select()
-
-    // Update response
-
-    // Check if there's an error object (even if it's empty)
-    if (error && Object.keys(error).length > 0) {
-      // Error updating post by slug
-      return false
+    // sync tags if provided
+    if (updates.tags) {
+      await supabaseAdmin.from('article_tags').delete().eq('article_id', existingPost.id);
+      if (updates.tags.length > 0) {
+        await upsertTagsAndAttach(existingPost.id, updates.tags);
+      }
     }
 
-    // Check if we have data returned
-    if (!data || data.length === 0) {
-      // No data returned after update for slug
-      return false
-    }
-
-    // Post updated successfully
     return true
   } catch (error) {
-    // Error in updatePostBySlug
     return false
   }
 }
@@ -496,8 +515,8 @@ export const updatePostBySlug = async (slug: string, updates: Partial<CreateBlog
 // Fungsi untuk menghapus artikel
 export const deletePost = async (id: string): Promise<boolean> => {
   try {
-    const { error } = await supabase
-      .from('blog_posts')
+    const { error } = await supabaseAdmin
+      .from('articles')
       .delete()
       .eq('id', id)
 
@@ -517,9 +536,8 @@ export const deletePost = async (id: string): Promise<boolean> => {
 export const getPostsByTag = async (tag: string): Promise<BlogPost[]> => {
   try {
     const { data, error } = await supabase
-      .from('blog_posts')
-      .select('*')
-      .eq('status', 'published')
+      .from('articles_feed')
+      .select('id,title,slug,excerpt,thumbnail_url,author_name,published_at,created_at,updated_at,tags,categories')
       .contains('tags', [tag])
       .order('published_at', { ascending: false })
 
@@ -528,7 +546,7 @@ export const getPostsByTag = async (tag: string): Promise<BlogPost[]> => {
       throw error
     }
 
-    return data || []
+    return (data || []).map((row: ArticlesFeedRow) => mapArticlesFeedRowToBlogPost(row))
   } catch (error) {
     console.error('Error in getPostsByTag:', error)
     return []
@@ -539,10 +557,10 @@ export const getPostsByTag = async (tag: string): Promise<BlogPost[]> => {
 export const searchPosts = async (query: string): Promise<BlogPost[]> => {
   try {
     const { data, error } = await supabase
-      .from('blog_posts')
-      .select('*')
+      .from('articles')
+      .select('id,title,slug,excerpt,thumbnail_url,published_at,created_at,updated_at')
+      .textSearch('search_tsv', query, { type: 'plain', config: 'simple' })
       .eq('status', 'published')
-      .or(`title.ilike.%${query}%,content.ilike.%${query}%,excerpt.ilike.%${query}%`)
       .order('published_at', { ascending: false })
 
     if (error) {
@@ -550,7 +568,7 @@ export const searchPosts = async (query: string): Promise<BlogPost[]> => {
       throw error
     }
 
-    return data || []
+    return (data || []).map((row: ArticleRow) => mapArticleRowToBlogPost(row))
   } catch (error) {
     console.error('Error in searchPosts:', error)
     return []
@@ -574,9 +592,8 @@ export const getRelatedPosts = async (currentPost: BlogPost, limit: number = 3):
 
     // Ambil artikel dengan tag yang sama
     const { data, error } = await supabase
-      .from('blog_posts')
-      .select('*')
-      .eq('status', 'published')
+      .from('articles_feed')
+      .select('id,title,slug,excerpt,thumbnail_url,author_name,published_at,created_at,updated_at,tags,categories')
       .neq('id', currentPost.id)
       .contains('tags', currentPost.tags || [])
       .order('published_at', { ascending: false })
@@ -587,16 +604,16 @@ export const getRelatedPosts = async (currentPost: BlogPost, limit: number = 3):
       throw error
     }
 
-    let relatedPosts = data || []
+    let relatedPosts: ArticlesFeedRow[] = data || []
 
     // Jika tidak cukup artikel dengan tag yang sama, ambil artikel terbaru
     if (relatedPosts.length < limit) {
+      const excludeIds = relatedPosts.map(p => p.id)
       const { data: fallbackData, error: fallbackError } = await supabase
-        .from('blog_posts')
-        .select('*')
-        .eq('status', 'published')
+        .from('articles_feed')
+        .select('id,title,slug,excerpt,thumbnail_url,author_name,published_at,created_at,updated_at,tags,categories')
         .neq('id', currentPost.id)
-        .not('id', 'in', `(${relatedPosts.map(p => p.id).join(',')})`)
+        .not('id', 'in', `(${excludeIds.join(',') || 'NULL'})`)
         .order('published_at', { ascending: false })
         .limit(limit - relatedPosts.length)
 
@@ -606,9 +623,9 @@ export const getRelatedPosts = async (currentPost: BlogPost, limit: number = 3):
     }
 
     // Update cache
-    relatedPostsCache.set(cacheKey, { posts: relatedPosts, timestamp: now })
+    relatedPostsCache.set(cacheKey, { posts: relatedPosts.map(mapArticlesFeedRowToBlogPost), timestamp: now })
 
-    return relatedPosts
+    return (relatedPosts || []).map(mapArticlesFeedRowToBlogPost)
   } catch (error) {
     console.error('Error in getRelatedPosts:', error)
     return []
