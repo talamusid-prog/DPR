@@ -59,11 +59,7 @@ export const clearPostsCache = () => {
 // Fungsi untuk upload gambar artikel dengan fallback
 export const uploadBlogImage = async (file: File): Promise<UploadResult> => {
   try {
-    console.log('📤 Uploading blog image:', {
-      name: file.name,
-      size: file.size,
-      type: file.type
-    })
+    // Uploading blog image
 
     // Coba upload ke Supabase Storage dulu
     const result = await uploadImage(file, {
@@ -74,32 +70,32 @@ export const uploadBlogImage = async (file: File): Promise<UploadResult> => {
     })
 
     if (result.success && result.url) {
-      console.log('✅ Blog image uploaded to Supabase Storage:', result.url)
+      // Blog image uploaded to Supabase Storage
       return result
     } else {
-      console.log('⚠️ Supabase Storage failed, trying fallback...')
+      // Supabase Storage failed, trying fallback
       
       // Fallback ke base64 compressed
       const fallbackResult = await uploadWithFallback(file)
       
       if (fallbackResult.success) {
-        console.log('✅ Blog image uploaded with fallback (base64 compressed)')
+        // Blog image uploaded with fallback
       } else {
-        console.error('❌ Both Supabase and fallback failed')
+        // Both Supabase and fallback failed
       }
       
       return fallbackResult
     }
   } catch (error) {
-    console.error('❌ Upload blog image error:', error)
+    // Upload blog image error
     
     // Try fallback on error
     try {
-      console.log('🔄 Trying fallback due to error...')
+      // Trying fallback due to error
       const fallbackResult = await uploadWithFallback(file)
       return fallbackResult
     } catch (fallbackError) {
-      console.error('❌ Fallback also failed:', fallbackError)
+      // Fallback also failed
       return {
         success: false,
         error: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`

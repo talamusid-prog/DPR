@@ -138,7 +138,7 @@ const AdminGallery = () => {
     setIsUploading(true);
     
     try {
-      console.log('📤 Uploading gallery image to Supabase Storage...');
+      // Uploading gallery image to Supabase Storage
       
       // Upload ke Supabase Storage
       const result = await uploadGalleryImage(file);
@@ -149,13 +149,13 @@ const AdminGallery = () => {
           ...prev,
           image_url: result.url!
         }));
-        console.log('✅ Gallery image uploaded successfully:', result.url);
+        // Gallery image uploaded successfully
       } else {
-        console.error('❌ Upload failed:', result.error);
+        // Upload failed
         showError(result.error || 'Gagal mengupload gambar');
       }
     } catch (error) {
-      console.error("❌ Error uploading file:", error);
+      // Error uploading file
       showError(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsUploading(false);

@@ -179,11 +179,7 @@ export const validateImageFile = (file: File): { valid: boolean; error?: string 
 // Fungsi untuk upload gambar gallery ke Supabase Storage
 export const uploadGalleryImage = async (file: File): Promise<UploadResult> => {
   try {
-    console.log('📤 Uploading gallery image:', {
-      name: file.name,
-      size: file.size,
-      type: file.type
-    })
+    // Uploading gallery image
 
     const result = await uploadImage(file, {
       bucket: 'gallery-images',
@@ -193,14 +189,14 @@ export const uploadGalleryImage = async (file: File): Promise<UploadResult> => {
     })
 
     if (result.success && result.url) {
-      console.log('✅ Gallery image uploaded successfully:', result.url)
+      // Gallery image uploaded successfully
     } else {
-      console.error('❌ Gallery image upload failed:', result.error)
+      // Gallery image upload failed
     }
 
     return result
   } catch (error) {
-    console.error('❌ Upload gallery image error:', error)
+    // Upload gallery image error
     return {
       success: false,
       error: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`

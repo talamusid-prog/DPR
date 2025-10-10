@@ -57,7 +57,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         }, 2000)
       }
     } catch (error) {
-      console.error('Upload error:', error)
+      // Upload error
       setUploadResult({
         success: false,
         error: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
