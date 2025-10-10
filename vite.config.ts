@@ -22,17 +22,7 @@ export default defineConfig(({ mode }) => ({
   build: {
     // Optimasi build untuk performa yang lebih baik
     target: 'esnext',
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn']
-      },
-      mangle: {
-        safari10: true
-      }
-    },
+    minify: 'esbuild', // Gunakan esbuild yang lebih cepat
     rollupOptions: {
       output: {
         // Code splitting untuk mengurangi bundle size
