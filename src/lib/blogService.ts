@@ -247,6 +247,26 @@ const toSlug = (text: string): string => {
     .trim();
 };
 
+const generateUniqueSlug = async (baseSlug: string): Promise<string> => {
+  let slug = baseSlug;
+  let counter = 1;
+
+  while (true) {
+    const { data } = await supabaseAdmin
+      .from('articles')
+      .select('id')
+      .eq('slug', slug)
+      .limit(1);
+
+    if (!data || data.length === 0) {
+      return slug;
+    }
+
+    slug = `${baseSlug}-${counter}`;
+    counter++;
+  }
+};
+
 const upsertTagsAndAttach = async (articleId: string | number, tags: string[] | undefined) => {
   if (!tags || tags.length === 0) return;
   const tagRows = tags.map((name) => ({ name, slug: toSlug(name) }));
@@ -362,7 +382,8 @@ export const incrementViews = async (_postId: string): Promise<void> => {
 // Fungsi untuk membuat artikel baru
 export const createPost = async (post: CreateBlogPost): Promise<BlogPost | null> => {
   try {
-    const slug = post.slug?.trim() || toSlug(post.title);
+    const baseSlug = post.slug?.trim() || toSlug(post.title);
+    const slug = await generateUniqueSlug(baseSlug);
     const insertData = {
       title: post.title.trim(),
       slug,
@@ -406,7 +427,8 @@ export const createPostWithSlug = async (post: Omit<CreateBlogPost, 'slug'>): Pr
     if (!post.title?.trim()) throw new Error('Judul artikel tidak boleh kosong');
     if (!post.content?.trim()) throw new Error('Konten artikel tidak boleh kosong');
 
-    const slug = toSlug(post.title);
+    const baseSlug = toSlug(post.title);
+    const slug = await generateUniqueSlug(baseSlug);
     const insertData = {
       title: post.title.trim(),
       slug,
