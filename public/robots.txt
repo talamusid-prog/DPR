@@ -1,19 +1,26 @@
+# Robots.txt untuk optimasi SEO dan crawling
 User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://ideadigiralcreative.com/sitemap.xml
+Sitemap: https://dpr-ri.zeabur.app/sitemap.xml
 
-# Crawl-delay (optional - reduce server load)
+# Disallow admin pages
+Disallow: /admin
+Disallow: /admin-*
+Disallow: /create-article
+Disallow: /edit-article
+Disallow: /api/
+
+# Allow important pages
+Allow: /blog
+Allow: /aspirasi
+Allow: /kalender
+Allow: /profil
+Allow: /dokumentasi
+
+# Crawl delay untuk menghindari overload
 Crawl-delay: 1
 
-# Disallow specific paths (if needed)
-# Disallow: /admin/
-# Disallow: /private/
-# Disallow: /api/
-
-# Allow important directories
-Allow: /css/
-Allow: /js/
-Allow: /images/
-Allow: /public/
+# Host directive
+Host: https://dpr-ri.zeabur.app
