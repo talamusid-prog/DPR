@@ -112,7 +112,6 @@ export const getBlogImageUrl = (imagePath: string, options?: {
 }): string => {
   // Validasi input
   if (!imagePath) {
-    console.warn('Empty image path provided')
     return ''
   }
 
@@ -404,7 +403,7 @@ export const createPostWithSlug = async (post: Omit<CreateBlogPost, 'slug'>): Pr
 // Fungsi untuk mengupdate artikel berdasarkan ID
 export const updatePost = async (id: string, updates: Partial<CreateBlogPost>): Promise<BlogPost | null> => {
   try {
-    console.log('🔄 Updating post by ID:', { id, updates })
+    // Updating post by ID
     
     const { data, error } = await supabase
       .from('blog_posts')
@@ -418,27 +417,19 @@ export const updatePost = async (id: string, updates: Partial<CreateBlogPost>): 
       .single()
 
     if (error) {
-      console.error('❌ Error updating post:', {
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code
-      })
+      // Error updating post
       return null
     }
 
     if (!data) {
-      console.error('❌ No post found with ID:', id)
+      // No post found with ID
       return null
     }
 
-    console.log('✅ Post updated successfully:', data)
+    // Post updated successfully
     return data
   } catch (error) {
-    console.error('❌ Error in updatePost:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      error: error
-    })
+    // Error in updatePost
     return null
   }
 }
@@ -446,7 +437,7 @@ export const updatePost = async (id: string, updates: Partial<CreateBlogPost>): 
 // Fungsi untuk mengupdate artikel berdasarkan slug
 export const updatePostBySlug = async (slug: string, updates: Partial<CreateBlogPost>): Promise<boolean> => {
   try {
-    console.log('🔄 Updating post by slug:', { slug, updates })
+    // Updating post by slug
     
     // Cek apakah post ada terlebih dahulu
     const { data: existingPost, error: checkError } = await supabase
@@ -456,31 +447,19 @@ export const updatePostBySlug = async (slug: string, updates: Partial<CreateBlog
       .single()
 
     if (checkError) {
-      console.error('❌ Error checking post existence:', {
-        message: checkError.message,
-        details: checkError.details,
-        hint: checkError.hint,
-        code: checkError.code
-      })
+      // Error checking post existence
       return false
     }
 
     if (!existingPost) {
-      console.error('❌ Post not found with slug:', slug)
+      // Post not found with slug
       return false
     }
 
-    console.log('📋 Found post:', { id: existingPost.id, title: existingPost.title })
+    // Found post
 
     // Update post
-    console.log('🔄 Attempting to update post with data:', {
-      slug,
-      updates: {
-        ...updates,
-        updated_at: new Date().toISOString(),
-        published_at: updates.status === 'published' ? new Date().toISOString() : null
-      }
-    })
+    // Attempting to update post with data
 
     const { data, error } = await supabase
       .from('blog_posts')
@@ -492,44 +471,24 @@ export const updatePostBySlug = async (slug: string, updates: Partial<CreateBlog
       .eq('slug', slug)
       .select()
 
-    console.log('📊 Update response:', { 
-      data, 
-      error, 
-      hasData: !!data, 
-      hasError: !!error,
-      dataLength: data?.length || 0,
-      errorType: typeof error
-    })
+    // Update response
 
     // Check if there's an error object (even if it's empty)
     if (error && Object.keys(error).length > 0) {
-      console.error('❌ Error updating post by slug:', {
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code,
-        fullError: error,
-        errorType: typeof error,
-        errorKeys: Object.keys(error || {}),
-        errorString: JSON.stringify(error, null, 2)
-      })
+      // Error updating post by slug
       return false
     }
 
     // Check if we have data returned
     if (!data || data.length === 0) {
-      console.error('❌ No data returned after update for slug:', slug)
+      // No data returned after update for slug
       return false
     }
 
-    console.log('✅ Post updated successfully:', data[0])
+    // Post updated successfully
     return true
   } catch (error) {
-    console.error('❌ Error in updatePostBySlug:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      error: error,
-      stack: error instanceof Error ? error.stack : undefined
-    })
+    // Error in updatePostBySlug
     return false
   }
 }

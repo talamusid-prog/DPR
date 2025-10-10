@@ -195,7 +195,7 @@ const Blog = () => {
                                 loading="lazy"
                                 decoding="async"
                                 onError={(e) => {
-                                  console.warn('Image load error:', e.currentTarget.src);
+                                  // Image load error - fallback to default
                                   e.currentTarget.src = `/berita${index + 1}.jpg`;
                                 }}
                               />

@@ -74,8 +74,30 @@ export const uploadWithFallback = async (file: File): Promise<UploadResult> => {
       const reader = new FileReader()
       reader.onload = () => {
         const result = reader.result as string
+        
+        // Validasi format base64 yang ketat
+        if (!result || !result.startsWith('data:image/') || !result.includes(',')) {
+          reject(new Error('Invalid base64 format'))
+          return
+        }
+        
         // Optimasi base64 dengan menghapus whitespace dan karakter yang tidak perlu
         const optimizedBase64 = result.replace(/\s/g, '')
+        
+        // Validasi base64 data setelah optimasi
+        const base64Parts = optimizedBase64.split(',')
+        if (base64Parts.length !== 2) {
+          reject(new Error('Invalid base64 format after optimization'))
+          return
+        }
+        
+        // Test decode untuk memastikan data valid
+        try {
+          atob(base64Parts[1].substring(0, Math.min(100, base64Parts[1].length)))
+        } catch (error) {
+          reject(new Error('Invalid base64 data'))
+          return
+        }
         
         // Jika base64 terlalu besar (>500KB), coba kompresi tambahan
         if (optimizedBase64.length > 500000) {
@@ -97,7 +119,7 @@ export const uploadWithFallback = async (file: File): Promise<UploadResult> => {
       path: 'base64-optimized'
     }
   } catch (error) {
-    console.error('❌ Fallback upload error:', error)
+    // Fallback upload error
     return {
       success: false,
       error: `Fallback upload gagal: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -138,7 +160,9 @@ export const getOptimizedBase64Url = (base64Url: string, options?: {
 
   // Test decode untuk memastikan data valid
   try {
-    atob(data.substring(0, 100)) // Test decode sebagian kecil
+    // Test decode sebagian kecil untuk validasi
+    const testData = data.substring(0, Math.min(100, data.length))
+    atob(testData)
   } catch (error) {
     console.warn('Invalid base64 data:', error.message)
     return ''

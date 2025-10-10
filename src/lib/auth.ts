@@ -129,16 +129,12 @@ class AuthService {
   // Cek apakah user adalah admin
   private isAdmin(email: string | undefined): boolean {
     if (!email) {
-      console.log('🔍 isAdmin: No email provided')
+      // No email provided
       return false
     }
     
     const isAdminUser = this.adminEmails.includes(email.toLowerCase())
-    console.log('🔍 isAdmin check:', {
-      email: email,
-      adminEmails: this.adminEmails,
-      isAdmin: isAdminUser
-    })
+    // isAdmin check
     
     return isAdminUser
   }
