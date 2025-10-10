@@ -34,15 +34,20 @@ BEGIN
       AND tablename = split_part(p_table::text, '.', 2)
       AND policyname = p_policy_name
   ) THEN
-    EXECUTE format(
-      'CREATE POLICY %I ON %s FOR %s TO %I USING (%s)%s',
-      p_policy_name,
-      p_table,
-      p_cmd,
-      p_role,
-      COALESCE(p_using, 'true'),
-      CASE WHEN p_check IS NOT NULL THEN format(' WITH CHECK (%s)', p_check) ELSE '' END
-    );
+    BEGIN
+      EXECUTE format(
+        'CREATE POLICY %I ON %s FOR %s TO %I USING (%s)%s',
+        p_policy_name,
+        p_table,
+        p_cmd,
+        p_role,
+        COALESCE(p_using, 'true'),
+        CASE WHEN p_check IS NOT NULL THEN format(' WITH CHECK (%s)', p_check) ELSE '' END
+      );
+    EXCEPTION WHEN duplicate_object THEN
+      -- Policy already exists; ignore to keep script idempotent
+      NULL;
+    END;
   END IF;
 END; $$;
 
