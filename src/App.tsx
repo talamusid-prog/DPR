@@ -13,11 +13,11 @@ import { useMobileImageOptimization } from "./lib/imageOptimizationMobile";
 
 // Critical components - load immediately
 import Index from "./pages/Index";
-import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 // Lazy load non-critical components
 const Blog = lazy(() => import("./pages/Blog"));
+const Admin = lazy(() => import("./pages/Admin"));
 const BlogDetail = lazy(() => import("./components/BlogDetail"));
 const CreateArticle = lazy(() => import("./pages/CreateArticle"));
 const EditArticle = lazy(() => import("./pages/EditArticle"));
